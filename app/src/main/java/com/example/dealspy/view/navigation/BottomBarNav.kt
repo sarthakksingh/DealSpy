@@ -7,9 +7,9 @@ import androidx.navigation.NavController
 //Todo
 @Composable
 fun BottomNavBar(
-modifier: Modifier = Modifier,
-navController: NavController,
-bottomMenu: List<BottomNavOptions>
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    bottomMenu: Unit
 ){
 
 }
