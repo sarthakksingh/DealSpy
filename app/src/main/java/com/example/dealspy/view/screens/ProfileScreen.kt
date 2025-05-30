@@ -27,59 +27,61 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.components.WishlistCard
 
 
 @Composable
 fun ProfileScreen(navController: NavHostController) {
-    val backgroundColor = Color(0xFFFEEFEF)
-    val cardColor = Color(0xFFFACFCF)
-    val buttonColor = Color(0xFFFCD9A8)
+    DealSpyTheme {
+        val backgroundColor = Color(0xFFFEEFEF)
+        val cardColor = Color(0xFFFACFCF)
+        val buttonColor = Color(0xFFFCD9A8)
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor)
-            .padding(16.dp)
-    ) {
-        Text(text = "Profile", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Profile Image
-        Box(
+        Column(
             modifier = Modifier
-                .size(100.dp)
-                .clip(RoundedCornerShape(14.dp))
-                .background(Color.White)
-                .align(Alignment.CenterHorizontally),
-
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .background(backgroundColor)
+                .padding(16.dp)
         ) {
-            Icon(
-                Icons.Default.Person,
-                contentDescription = null,
-                tint = Color.Gray,
-                modifier = Modifier.size(40.dp)
+            Text(text = "Profile", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Profile Image
+            Box(
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color.White)
+                    .align(Alignment.CenterHorizontally),
+
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Person,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(40.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                "TANISHI BISEN",
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-        }
+            Text(
+                "+91 _______",
+                color = Color.Gray,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            "TANISHI BISEN",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-        Text(
-            "+91 _______",
-            color = Color.Gray,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-        /*Button(
+            Spacer(modifier = Modifier.height(12.dp))
+            /*Button(
             onClick = { },
             colors = ButtonDefaults.buttonColors(buttonColor),
             shape = RoundedCornerShape(8.dp),
@@ -88,32 +90,33 @@ fun ProfileScreen(navController: NavHostController) {
             Text("Edit Profile", color = Color.Black)
         }*/
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("Wishlist", fontWeight = FontWeight.Bold, fontSize = 18.sp)
-            Icon(
-                Icons.Default.MoreVert,
-                contentDescription = "More Options",
-                tint = Color.Gray,
-                modifier = Modifier.rotate(90f)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Wishlist", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Icon(
+                    Icons.Default.MoreVert,
+                    contentDescription = "More Options",
+                    tint = Color.Gray,
+                    modifier = Modifier.rotate(90f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Wishlist Items
+            repeat(3) {
+                WishlistCard(cardColor = cardColor)
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Wishlist Items
-        repeat(3) {
-            WishlistCard(cardColor = cardColor)
-            Spacer(modifier = Modifier.height(12.dp))
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-
     }
 }
 
