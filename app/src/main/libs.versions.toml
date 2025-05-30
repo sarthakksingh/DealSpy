@@ -1,0 +1,7 @@
+toml
+[versions]
+generativeai = "0.7.0" // Check for the latest version of the Generative AI SDK
+
+[libraries]
+generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
+# ... other libraries
