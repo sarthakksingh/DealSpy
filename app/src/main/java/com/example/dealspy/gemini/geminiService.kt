@@ -11,8 +11,27 @@ object GeminiService {
         apiKey = API_KEY
     )
 
-    suspend fun generateSearchSuggestions(query: String): String {
-        val prompt = "Give me product suggestions for \"$query\" from Indian e-commerce platforms with prices."
+    suspend fun generateSearchSuggestions(productName: String): String {
+        val prompt =
+            "Find specific listings for individual ${productName} products on brand websites, " +
+                    "Amazon India, Flipkart, Ajio, Myntra, Meesho, Tata CLiQ, Croma, " +
+                    "Blinkit, BigBasket, JioMart, and Instamart. For each product found," +
+                    " extract the product name (including any variants)," +
+                    " platform name, price (in INR), the direct product deep link, " +
+                    "and the image URL. Present the results in the following JSON format:" +
+                    "```json\n" +
+                    "{\n" +
+                    "  \"product\": [\n" +
+                    "    {\n" +
+                    "      \"name\": \"Product Name (Variant)\",\n" +
+                    "      \"platform name\": \"Platform Name\",\n" +
+                    "      \"price\": \"Price in INR\",\n" +
+                    "      \"deep link\": \"Product URL\",\n" +
+                    "      \"image URL\": \"Image URL\"\n" +
+                    "    },\n" +
+                    "    ...\n" +
+                    "  ]\n" +
+                    "}"
 
         return try {
             val response = generativeModel.generateContent(prompt)
