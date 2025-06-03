@@ -6,14 +6,17 @@ data class Product(
     val name: String,
 
     @SerializedName("platform name")
-    val platform_name: String,
+    val platformName: String,
 
     @SerializedName("price")
-    val price: String,
+    val price: Int,
+
+    @SerializedName("has price dropped")
+    val lastKnownPrice: Int,
 
     @SerializedName("deep link")
-    val deep_link: String,
+    val deepLink: String,
 
     @SerializedName("image URL")
-    val image_URL: String
+    val imageURL: String
 )
