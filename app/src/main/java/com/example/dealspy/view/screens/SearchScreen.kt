@@ -39,79 +39,82 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.dealspy.gemini.GeminiService
+import com.example.dealspy.ui.theme.DealSpyTheme
 import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen() {
-    var query by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    var geminiResult by remember { mutableStateOf("") }
+    DealSpyTheme {
+        var query by remember { mutableStateOf("") }
+        var isLoading by remember { mutableStateOf(false) }
+        var geminiResult by remember { mutableStateOf("") }
 
-    val coroutineScope = rememberCoroutineScope()
+        val coroutineScope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            placeholder = { Text("Search for products...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-            keyboardActions = KeyboardActions(
-                onSearch = {
-                    if (query.isNotBlank()) {
-                        isLoading = true
-                        geminiResult = ""
-                        coroutineScope.launch {
-                            val result = GeminiService.generateSearchSuggestions(query)
-                            geminiResult = result.toString()
-                            isLoading = false
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = { Text("Search for products...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        if (query.isNotBlank()) {
+                            isLoading = true
+                            geminiResult = ""
+                            coroutineScope.launch {
+                                val result = GeminiService.generateSearchSuggestions(query)
+                                geminiResult = result.toString()
+                                isLoading = false
+                            }
                         }
                     }
-                }
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (query.isBlank()) {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search Icon",
-                    tint = Color.Gray,
-                    modifier = Modifier.size(120.dp)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text("Search for your product", fontWeight = FontWeight.Medium)
-            }
-        } else if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
-        } else {
-            Text(
-                text = "Showing results for \"$query\"",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            LazyColumn {
-                val lines = geminiResult.lines().filter { it.isNotBlank() }
-                lines.forEach { line ->
-                    item {
-                        ProductResultCard(text = line.trim())
-                        Spacer(modifier = Modifier.height(12.dp))
+            if (query.isBlank()) {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search Icon",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(120.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("Search for your product", fontWeight = FontWeight.Medium)
+                }
+            } else if (isLoading) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            } else {
+                Text(
+                    text = "Showing results for \"$query\"",
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                LazyColumn {
+                    val lines = geminiResult.lines().filter { it.isNotBlank() }
+                    lines.forEach { line ->
+                        item {
+                            ProductResultCard(text = line.trim())
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
                     }
                 }
             }
@@ -123,38 +126,40 @@ fun SearchScreen() {
 
 @Composable
 fun ProductResultCard(text: String) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Row(modifier = Modifier.padding(12.dp)) {
-            Box(
-                modifier = Modifier
-                    .size(64.dp)
-                    .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
-            ) {
-                Icon(
-                    Icons.Default.Face,
-                    contentDescription = "Product Image",
+    DealSpyTheme {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(4.dp)
+        ) {
+            Row(modifier = Modifier.padding(12.dp)) {
+                Box(
                     modifier = Modifier
-                        .size(32.dp)
-                        .align(Alignment.Center)
-                )
-            }
+                        .size(64.dp)
+                        .background(Color.LightGray, shape = RoundedCornerShape(8.dp))
+                ) {
+                    Icon(
+                        Icons.Default.Face,
+                        contentDescription = "Product Image",
+                        modifier = Modifier
+                            .size(32.dp)
+                            .align(Alignment.Center)
+                    )
+                }
 
-            Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
-            Column {
-                Text(text, fontWeight = FontWeight.Bold)
-                Row {
-                    repeat(4) {
-                        Icon(
-                            Icons.Default.Star,
-                            contentDescription = "Rating",
-                            modifier = Modifier.size(16.dp),
-                            tint = Color(0xFFFFD700)
-                        )
+                Column {
+                    Text(text, fontWeight = FontWeight.Bold)
+                    Row {
+                        repeat(4) {
+                            Icon(
+                                Icons.Default.Star,
+                                contentDescription = "Rating",
+                                modifier = Modifier.size(16.dp),
+                                tint = Color(0xFFFFD700)
+                            )
+                        }
                     }
                 }
             }
