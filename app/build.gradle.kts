@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,7 +7,13 @@ plugins {
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.google.dagger.hilt.android)
 }
-
+val localProperties =Properties()
+val localPropertiesFile = File("dealSpy.properties")
+if(localPropertiesFile.exists() && localPropertiesFile.isFile){
+    localPropertiesFile.inputStream().use {
+        localProperties.load(it)
+    }
+}
 android {
     namespace = "com.example.dealspy"
     compileSdk = 35
@@ -16,7 +24,6 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -28,6 +35,9 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            buildConfigField("String", "API_KEY", localProperties.getProperty("API_KEY"))
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -38,6 +48,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -50,16 +61,16 @@ dependencies {
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation (libs.androidx.material3)
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.gson)
     ksp(libs.google.dagger.hilt.compiler)
     implementation(libs.google.dagger.hilt.android)
-    implementation (libs.androidx.material)
-    implementation (libs.material3)
-    implementation (libs.androidx.navigation.compose.v275)
-    implementation (libs.coil.compose)
+    implementation(libs.androidx.material)
+    implementation(libs.material3)
+    implementation(libs.androidx.navigation.compose.v275)
+    implementation(libs.coil.compose)
 
     implementation(libs.generativeai)
     testImplementation(libs.junit)
