@@ -52,7 +52,7 @@ fun WatchlistScreen(
 }
 
 
-@Preview(showBackground = true)
+/*@Preview(showBackground = true)
 @Composable
 fun WatchlistScreenPreview() {
     val dummyProducts = listOf(
@@ -80,6 +80,6 @@ fun WatchlistScreenPreview() {
         onAddProduct = {},
         onDeleteProduct = {}
     )
-}
+}*/
 
 
