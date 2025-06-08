@@ -71,7 +71,7 @@ dependencies {
     implementation(libs.material3)
     implementation(libs.androidx.navigation.compose.v275)
     implementation(libs.coil.compose)
-
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     implementation(libs.generativeai)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

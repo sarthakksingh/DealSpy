@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainViewModel: ViewModel() {
+class MainViewModel @Inject constructor() : ViewModel() {
 
     private val _searchList = MutableStateFlow<UiState<List<Product>>>(UiState.Idle)
     val searchList = _searchList.asStateFlow()
@@ -47,8 +47,9 @@ class MainViewModel: ViewModel() {
                     UiState.Success(product)
                 }
             } catch (e: Exception) {
-                _searchList.value = UiState.Failed(e.message ?: "Unknown error occurred")
-            }
+                    _priceCompareList.value = UiState.Failed(e.message ?: "Unknown error occurred")
+                }
+
         }
     }
 
