@@ -37,18 +37,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.dealspy.data.repo.GeminiService
 import com.example.dealspy.state.UiState
 import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.utils.ShimmerSearchResultCard
 import com.example.dealspy.vm.MainViewModel
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun SearchScreen( viewModel: MainViewModel) {
+fun SearchScreen(viewModel: MainViewModel = hiltViewModel(), navController: NavController) {
     DealSpyTheme {
         var query by remember { mutableStateOf("") }
         var isLoading by remember { mutableStateOf(false) }
@@ -56,10 +56,11 @@ fun SearchScreen( viewModel: MainViewModel) {
         val searchListState = viewModel.searchList.collectAsState()
         val coroutineScope = rememberCoroutineScope()
 
-        isLoading = when(searchListState.value){
-            is UiState.Loading ->{
+        isLoading = when (searchListState.value) {
+            is UiState.Loading -> {
                 true
             }
+
             else -> {
                 false
             }
@@ -80,13 +81,7 @@ fun SearchScreen( viewModel: MainViewModel) {
                 keyboardActions = KeyboardActions(
                     onSearch = {
                         if (query.isNotBlank()) {
-                            isLoading = true
-                            geminiResult = ""
-                            coroutineScope.launch {
-                                val result = GeminiService.generateSearchSuggestions(query)
-                                geminiResult = result.toString()
-                                isLoading = false
-                            }
+                            viewModel.searchProductList(query)
                         }
                     }
                 )
@@ -128,7 +123,9 @@ fun SearchScreen( viewModel: MainViewModel) {
                         item {
                             ShimmerSearchResultCard(isLoading = isLoading, contentAfterLoading = {
                                 ProductResultCard(text = line.trim())
-                            }, modifier = Modifier.fillMaxWidth().padding(16.dp))
+                            }, modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp))
                             Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
@@ -137,7 +134,6 @@ fun SearchScreen( viewModel: MainViewModel) {
         }
     }
 }
-
 
 
 @Composable

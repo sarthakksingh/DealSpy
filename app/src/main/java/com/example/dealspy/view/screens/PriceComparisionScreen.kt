@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,9 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.state.UiState
@@ -54,18 +56,44 @@ val accentColor = Color(0xFF4CAF50) // Green for price
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PriceComparePreviewScreen(products: List<Product>, viewModel: MainViewModel) {
+fun PriceCompareScreen(
+    productName: String,
+    viewModel: MainViewModel = hiltViewModel(),
+    navController: NavController
+) {
     DealSpyTheme {
-        val sortedList = products.sortedBy { it.price }
+        LaunchedEffect(productName) {
+            viewModel.priceCompare(productName)
+        }
+        val priceCompareState by viewModel.priceCompareList.collectAsState()
         var isLoading by remember { mutableStateOf(false) }
+
+        val sortedList: List<Product> = when (priceCompareState) {
+            is UiState.Success -> {
+                val data = (priceCompareState as UiState.Success<List<Product>>).data
+                isLoading = false
+                data.sortedBy { it.price }
+            }
+
+            is UiState.Loading -> {
+                isLoading = true
+                emptyList()
+            }
+
+            else -> {
+                isLoading = false
+                emptyList()
+            }
+        }
+
         val topProduct = sortedList.firstOrNull()
         val remainingProducts = sortedList.drop(1)
-        val priceCompareList = viewModel.priceCompareList.collectAsState()
 
-        isLoading = when(priceCompareList.value){
-            is UiState.Loading ->{
+        isLoading = when (priceCompareState) {
+            is UiState.Loading -> {
                 true
             }
+
             else -> {
                 false
             }
@@ -125,7 +153,9 @@ fun PriceComparePreviewScreen(products: List<Product>, viewModel: MainViewModel)
                         items(remainingProducts) { product ->
                             ShimmerSearchResultCard(isLoading = isLoading, contentAfterLoading = {
                                 RemainingProductCard(product)
-                            }, modifier = Modifier.fillMaxWidth().padding(16.dp))
+                            }, modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp))
 
                         }
                     }
@@ -136,7 +166,7 @@ fun PriceComparePreviewScreen(products: List<Product>, viewModel: MainViewModel)
 }
 
 @Composable
-fun BestDealCard(product: Product){
+fun BestDealCard(product: Product) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -193,8 +223,9 @@ fun BestDealCard(product: Product){
         }
     }
 }
+
 @Composable
-fun RemainingProductCard(product: Product){
+fun RemainingProductCard(product: Product) {
     Card(
         modifier = Modifier
             .width(240.dp)
