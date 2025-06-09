@@ -9,7 +9,7 @@ data class Product(
     val platformName: String,
 
     @SerializedName("price")
-    val price: Int,
+    val priceRaw: String,
 
     @SerializedName("has price dropped")
     val lastKnownPrice: Int,
@@ -20,3 +20,7 @@ data class Product(
     @SerializedName("image URL")
     val imageURL: String
 )
+{
+    val price: Int
+        get() = priceRaw.replace("₹", "").toIntOrNull() ?: 0
+}

@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,20 +37,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.dealspy.gemini.GeminiService
+import androidx.navigation.NavController
+import com.example.dealspy.data.repo.GeminiService
+import com.example.dealspy.state.UiState
 import com.example.dealspy.ui.theme.DealSpyTheme
+import com.example.dealspy.view.utils.ShimmerSearchResultCard
+import com.example.dealspy.vm.MainViewModel
 import kotlinx.coroutines.launch
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun SearchScreen() {
+fun SearchScreen(viewModel: MainViewModel = hiltViewModel(), navController: NavController) {
     DealSpyTheme {
         var query by remember { mutableStateOf("") }
         var isLoading by remember { mutableStateOf(false) }
         var geminiResult by remember { mutableStateOf("") }
-
+        val searchListState = viewModel.searchList.collectAsState()
         val coroutineScope = rememberCoroutineScope()
+
+        isLoading = when (searchListState.value) {
+            is UiState.Loading -> {
+                true
+            }
+
+            else -> {
+                false
+            }
+        }
 
         Column(
             modifier = Modifier
@@ -66,13 +81,7 @@ fun SearchScreen() {
                 keyboardActions = KeyboardActions(
                     onSearch = {
                         if (query.isNotBlank()) {
-                            isLoading = true
-                            geminiResult = ""
-                            coroutineScope.launch {
-                                val result = GeminiService.generateSearchSuggestions(query)
-                                geminiResult = result.toString()
-                                isLoading = false
-                            }
+                            viewModel.searchProductList(query)
                         }
                     }
                 )
@@ -108,11 +117,15 @@ fun SearchScreen() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                LazyColumn {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
                     val lines = geminiResult.lines().filter { it.isNotBlank() }
                     lines.forEach { line ->
                         item {
-                            ProductResultCard(text = line.trim())
+                            ShimmerSearchResultCard(isLoading = isLoading, contentAfterLoading = {
+                                ProductResultCard(text = line.trim())
+                            }, modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp))
                             Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
@@ -121,7 +134,6 @@ fun SearchScreen() {
         }
     }
 }
-
 
 
 @Composable
@@ -167,9 +179,10 @@ fun ProductResultCard(text: String) {
     }
 }
 
+/*
 @Preview(showBackground = true)
 @Composable
 fun SearchScreenPreview() {
     SearchScreen()
-}
+}*/
 
