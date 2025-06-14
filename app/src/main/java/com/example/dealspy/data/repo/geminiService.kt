@@ -26,16 +26,17 @@ object GeminiService {
                 ```json
                 {
                 "product": [
-                {
-                "name": "Product Name (Variant)",
-                "platform name": "Platform Name",
-                "price": "Price in INR",
-                "deep link": "Product URL",
-                "image URL": "Image URL"
-                },
-                ...
-                ]
-               }""".trimIndent()
+        {
+          "name": "Product Name (Variant)",
+          "platform name": "Platform Name",
+          "price": "Price in INR",
+          "deep link": "Product URL",
+          "image URL": "Image URL"
+         }
+      ]
+    }
+    ```
+    """.trimIndent()
         return try {
             val response = generativeModel.generateContent(prompt)
             val jsonString = response.text ?: return emptyList()

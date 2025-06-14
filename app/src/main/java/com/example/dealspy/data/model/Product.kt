@@ -11,7 +11,7 @@ data class Product(
     @SerializedName("price")
     val priceRaw: String,
 
-    @SerializedName("has price dropped")
+    @SerializedName("last known price") 
     val lastKnownPrice: Int,
 
     @SerializedName("deep link")
