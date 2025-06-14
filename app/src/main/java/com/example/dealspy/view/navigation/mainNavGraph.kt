@@ -25,7 +25,7 @@ fun mainNavGraph(navController: NavHostController = rememberNavController()) {
             )
         }
         composable(DealSpyScreens.ProfileScreen.routes) {
-            ProfileScreen(navController = navController)
+           // ProfileScreen(navController = navController)
         }
         composable(DealSpyScreens.SearchScreen.routes) {
             SearchScreen(navController = navController)

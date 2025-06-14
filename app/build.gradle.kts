@@ -27,6 +27,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+//
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -34,6 +35,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Define for release if needed, possibly from a different properties file or secure source
+            buildConfigField("String", "API_KEY", localProperties.getProperty("RELEASE_API_KEY") ?: "\"YOUR_DEFAULT_RELEASE_KEY\"")
         }
         debug {
             buildConfigField("String", "API_KEY", localProperties.getProperty("API_KEY"))
@@ -65,13 +68,15 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.gson)
+    implementation(libs.coil.compose.v240)
+
     ksp(libs.google.dagger.hilt.compiler)
     implementation(libs.google.dagger.hilt.android)
     implementation(libs.androidx.material)
     implementation(libs.material3)
     implementation(libs.androidx.navigation.compose.v275)
     implementation(libs.coil.compose)
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.generativeai)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
