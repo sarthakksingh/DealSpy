@@ -35,7 +35,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 
-//Best Deal Price Compare Card
+
 @Composable
 fun ShimmerDealCard(
     isLoading: Boolean,

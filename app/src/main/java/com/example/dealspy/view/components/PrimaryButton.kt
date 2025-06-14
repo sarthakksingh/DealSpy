@@ -35,7 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
-                //fontFamily = metropolisFamily
+
             )
         }
     }
