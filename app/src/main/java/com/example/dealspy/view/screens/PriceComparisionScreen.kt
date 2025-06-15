@@ -37,14 +37,14 @@ import com.example.dealspy.view.utils.BestDealCard
 import com.example.dealspy.view.utils.RemainingProductCard
 import com.example.dealspy.view.utils.ShimmerDealCard
 import com.example.dealspy.view.utils.ShimmerSearchResultCard
-import com.example.dealspy.vm.MainViewModel
+import com.example.dealspy.vm.SearchViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PriceCompareScreen(
     productName: String,
-    viewModel: MainViewModel = hiltViewModel(),
+    viewModel: SearchViewModel = hiltViewModel(),
     navController: NavController
 ) {
     LaunchedEffect(productName) {
@@ -54,18 +54,28 @@ fun PriceCompareScreen(
     val priceCompareState by viewModel.priceCompareList.collectAsState()
     var isLoading by remember { mutableStateOf(false) }
 
-    val sortedList: List<Product> = when (priceCompareState) {
+    var sortedList by remember { mutableStateOf<List<Product>>(emptyList()) }
+    var isFailed by remember { mutableStateOf(false) }
+
+    when (priceCompareState) {
         is UiState.Success -> {
             val data = (priceCompareState as UiState.Success<List<Product>>).data
+            sortedList = data.sortedBy { it.price }
+            isFailed = false
             isLoading = false
-            data.sortedBy { it.price }
         }
-        is UiState.Loading -> {
+        is UiState.Failed -> {
+            sortedList = emptyList()
+            isFailed = true
+            isLoading = false
+        }
+        else -> {
+            // keep shimmer as is
             isLoading = true
-            emptyList()
+            isFailed = false
         }
-        else -> emptyList()
     }
+
 
     val topProduct = sortedList.firstOrNull()
     val remainingProducts = sortedList.drop(1)
@@ -131,7 +141,8 @@ fun PriceCompareScreen(
                         )
                     }
                 }
-            } ?: Text(
+            } ?: // TODO: Have to implement lottie animation for no product found
+            Text(
                 text = "No Products Found",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
