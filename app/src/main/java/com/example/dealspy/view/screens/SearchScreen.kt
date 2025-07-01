@@ -37,11 +37,11 @@ import com.example.dealspy.state.UiState
 import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.utils.SearchResultCard
 import com.example.dealspy.view.utils.ShimmerSearchResultCard
-import com.example.dealspy.vm.MainViewModel
+import com.example.dealspy.vm.SearchViewModel
 
 @Composable
 fun SearchScreen(
-    viewModel: MainViewModel = hiltViewModel(),
+    viewModel: SearchViewModel = hiltViewModel(),
     navController: NavController
 ) {
     DealSpyTheme {
@@ -98,6 +98,7 @@ fun SearchScreen(
                 }
 
                 isLoading -> {
+                    //TODO: Have to implement shimmering effect!
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }

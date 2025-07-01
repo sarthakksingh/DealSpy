@@ -34,20 +34,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.utils.PurchaseHistoryCard
 import com.example.dealspy.view.utils.WishlistCard
+import com.example.dealspy.vm.ProfileViewModel
 
-
+//TODO: Have to implement and handle the load state and implement the shimmering effect
 @Composable
 fun ProfileScreen(
     userName: String = "John Doe",
     wishlist: List<Product> = dummyWishlist,
     purchaseHistory: List<Pair<Product, String>> = dummyHistory,
-    onDeleteFromWishlist: (Product) -> Unit = {},
-    onClearWatchlist: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    navController: NavController,
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
     Column(
         modifier = Modifier
@@ -83,7 +85,7 @@ fun ProfileScreen(
 
         LazyRow {
             items(wishlist, key = { it.name }) { product ->
-                WishlistCard(product = product, onDelete = { onDeleteFromWishlist(product) })
+                WishlistCard(product = product, onDelete = { viewModel.onDeleteFromWishlist(product) })
                 Spacer(modifier = Modifier.width(12.dp))
             }
         }
@@ -122,7 +124,7 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         Button(
-            onClick = onClearWatchlist,
+            onClick = {viewModel.onClearWatchlist()},
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
         ) {
@@ -132,7 +134,7 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = onLogout,
+            onClick = {viewModel.onLogout()},
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
         ) {
@@ -142,17 +144,17 @@ fun ProfileScreen(
 
 }
 
-@Preview(showBackground = true,uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun ProfileScreenPreview() {
-    DealSpyTheme {
-        ProfileScreen(
-            wishlist = dummyWishlist,
-            purchaseHistory = dummyHistory
-
-        )
-    }
-}
+//@Preview(showBackground = true,uiMode = Configuration.UI_MODE_NIGHT_YES)
+//@Composable
+//fun ProfileScreenPreview() {
+//    DealSpyTheme {
+//        ProfileScreen(
+//            wishlist = dummyWishlist,
+//            purchaseHistory = dummyHistory
+//
+//        )
+//    }
+//}
 
 
 val dummyWishlist = listOf(
