@@ -6,13 +6,9 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.devtools.ksp)
     alias(libs.plugins.google.dagger.hilt.android)
-}
-val localProperties =Properties()
-val localPropertiesFile = File("dealSpy.properties")
-if(localPropertiesFile.exists() && localPropertiesFile.isFile){
-    localPropertiesFile.inputStream().use {
-        localProperties.load(it)
-    }
+    // Add the Google services Gradle plugin
+    id("com.google.gms.google-services")
+
 }
 android {
     namespace = "com.example.dealspy"
@@ -25,21 +21,32 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-//
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-            // Define for release if needed, possibly from a different properties file or secure source
-            buildConfigField("String", "API_KEY", localProperties.getProperty("RELEASE_API_KEY") ?: "\"YOUR_DEFAULT_RELEASE_KEY\"")
+        vectorDrawables {
+            useSupportLibrary = true
         }
-        debug {
-            buildConfigField("String", "API_KEY", localProperties.getProperty("API_KEY"))
+
+        val properties = Properties().apply {
+            val localPropertiesFile = rootProject.file("local.properties")
+            if (localPropertiesFile.exists()) {
+                load(localPropertiesFile.inputStream())
+            }
+        }
+
+// Correct way (consistent with API_KEY handling):
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"${properties.getProperty("WEB_CLIENT_ID", "")}\""
+        )
+        buildConfigField("String", "API_KEY", "\"${properties.getProperty("API_KEY", "")}\"")
+        buildTypes {
+            release {
+                isMinifyEnabled = false
+                proguardFiles(
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro"
+                )
+            }
         }
     }
     compileOptions {
@@ -56,7 +63,7 @@ android {
 }
 
 dependencies {
-    implementation ("com.airbnb.android:lottie-compose:6.3.0")
+    implementation("com.airbnb.android:lottie-compose:6.3.0")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -86,4 +93,18 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    // Firebase Authentication
+    implementation("com.google.firebase:firebase-auth:22.3.1")
+    // Optional: Google Sign-In
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    // Optional: Firebase UI (for pre-built auth UI)
+    implementation("com.firebaseui:firebase-ui-auth:8.0.2")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.google.firebase:firebase-auth-ktx")
+
+
 }
