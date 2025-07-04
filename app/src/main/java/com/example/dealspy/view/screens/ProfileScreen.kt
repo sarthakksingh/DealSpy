@@ -32,10 +32,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.dealspy.BuildConfig
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.utils.PurchaseHistoryCard
@@ -51,6 +53,7 @@ fun ProfileScreen(
     navController: NavController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -134,7 +137,7 @@ fun ProfileScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(
-            onClick = {viewModel.onLogout()},
+            onClick = {viewModel.signOut(context = context, onComplete = {})},
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
         ) {
