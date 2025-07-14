@@ -29,6 +29,7 @@ import androidx.navigation.navArgument
 import com.example.dealspy.view.screens.PriceCompareScreen
 import com.example.dealspy.view.screens.ProfileScreen
 import com.example.dealspy.view.screens.SearchScreen
+import com.example.dealspy.view.screens.SplashScreen
 import com.example.dealspy.view.screens.WatchlistScreen
 
 @Composable
@@ -82,7 +83,7 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
     ) { innerPadding ->
         NavHost(
             navController,
-            startDestination = DealSpyScreens.WatchListScreen.routes,
+            startDestination = DealSpyScreens.SplashScreen.routes,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(DealSpyScreens.WatchListScreen.routes) {
@@ -93,6 +94,9 @@ fun MainNavGraph(navController: NavHostController = rememberNavController()) {
             }
             composable(DealSpyScreens.SearchScreen.routes) {
                 SearchScreen(navController = navController)
+            }
+            composable(route = DealSpyScreens.SplashScreen.routes) {
+                SplashScreen(navController = navController)
             }
             composable(
                 route = "${DealSpyScreens.PriceCompareScreen.routes}/{product}",
