@@ -1,40 +1,22 @@
 package com.example.dealspy.view.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.airbnb.lottie.compose.LottieAnimation
-import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.LottieConstants
-import com.airbnb.lottie.compose.rememberLottieComposition
-import com.example.dealspy.R
+import androidx.navigation.compose.rememberNavController
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.state.UiState
-import com.example.dealspy.view.utils.SwipeToDeleteCard
+import com.example.dealspy.data.model.UiProduct
+import com.example.dealspy.ui.state.UiStateHandler
+import com.example.dealspy.view.utils.ProductCard
 import com.example.dealspy.vm.WatchListViewModel
 
 @Composable
@@ -42,111 +24,141 @@ fun WatchlistScreen(
     viewModel: WatchListViewModel = hiltViewModel(),
     navController: NavController
 ) {
-    val watchListState by viewModel.watchListState.collectAsState()
-    var productList by remember { mutableStateOf(listOf<Product>()) }
-    var selectedIndex by remember { mutableStateOf(0) }
+    val state by viewModel.watchListState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.loadWatchList()
-    }
-
-
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { viewModel.onAddProduct() },
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+    UiStateHandler(
+        state = state,
+        modifier = Modifier,
+        onRetry = { viewModel.loadWatchlist() },
+        onSuccess = { products ->
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                contentPadding = PaddingValues(8.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Product")
+                items(products) { uiProduct ->
+                    ProductCard(uiProduct)
+                }
             }
         }
-    ) { padding ->
-        when (watchListState) {
-            is UiState.Loading -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    //TODO: ADD LOTTIE ANIMATION
-                    CircularProgressIndicator()
-                }
-            }
-
-            is UiState.Failed -> {
-                Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    //TODO: ADD LOTTIE ANIMATION
-                }
-            }
-
-            is UiState.Success -> {
-                val productList = (watchListState as UiState.Success<List<Product>>).data
-
-                LazyColumn(contentPadding = padding) {
-                    items(
-                        items = productList,
-                        key = { it.deepLink }
-                    ) { product ->
-                        SwipeToDeleteCard(
-                            product = product,
-                            onClick = { viewModel.onProductClick(product) },
-                            onDelete = {
-                                viewModel.onDeleteProduct(product)
-                            }
-                        )
-                    }
-                }
-            }
-
-            else -> {}
-        }
-    }
-}
-
-
-val dummyProducts = listOf(
-    Product(
-        name = "iPhone 14",
-        platformName = "Amazon",
-        priceRaw = "₹71999",
-        lastKnownPrice = 75999,
-        deepLink = "https://amazon.in/iphone14",
-        imageURL = "https://imageurl.com/iphone14.png"
-    ),
-    Product(
-        name = "Nike Air Max",
-        platformName = "Flipkart",
-        priceRaw = "₹5999",
-        lastKnownPrice = 6999,
-        deepLink = "https://flipkart.com/nikeair",
-        imageURL = "https://imageurl.com/nike.png"
     )
-)
+}
 
-// later a function for LottieAnimation
+
 @Composable
-fun LottieAnimation() {
-    val composition = rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.notfounderror))
-
-    if (composition.value != null) {
-        LottieAnimation(
-            composition = composition.value,
-            iterations = LottieConstants.IterateForever,
-            modifier = Modifier.size(300.dp)
-        )
-    } else {
-        Text("Animation failed to load", color = Color.Red)
+fun WatchlistScreenPreviewable(products: List<UiProduct>) {
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        contentPadding = PaddingValues(8.dp)
+    ) {
+        items(products) { uiProduct ->
+            ProductCard(uiProduct)
+        }
     }
 }
 
 
+@Composable
+@Preview(showBackground = true)
+fun WatchlistPreview() {
+    val products = listOf(
+        UiProduct(
+            product = Product(
+                name = "Slim Fit Trousers",
+                platformName = "Myntra",
+                priceRaw = "₹1,259",
+                lastKnownPrice = 2990,
+                deepLink = "https://myntra.com/product1",
+                imageURL = "https://images.unsplash.com/photo-1602810318120-e9b7b0d93d3e?auto=format&fit=crop&w=400&q=80"
+            ),
+            brand = "Allen Solly",
+            timeLeftMillis = 2 * 60 * 60 * 1000
+        ),
+        UiProduct(
+            product = Product(
+                name = "Regular Fit Shirt",
+                platformName = "Ajio",
+                priceRaw = "₹1,599",
+                lastKnownPrice = 3290,
+                deepLink = "https://ajio.com/product2",
+                imageURL = "https://images.unsplash.com/photo-1584467735871-b93a28c61b43?auto=format&fit=crop&w=400&q=80"
+            ),
+            brand = "Louis Philippe",
+            timeLeftMillis = 5 * 60 * 60 * 1000 + 45 * 60 * 1000
+        ),
+        UiProduct(
+            product = Product(
+                name = "Casual Sneakers",
+                platformName = "Flipkart",
+                priceRaw = "₹2,499",
+                lastKnownPrice = 4990,
+                deepLink = "https://flipkart.com/product3",
+                imageURL = "https://images.unsplash.com/photo-1561808844-08c53b6bdc02?auto=format&fit=crop&w=400&q=80"
+            ),
+            brand = "PUMA",
+            timeLeftMillis = 3 * 60 * 60 * 1000
+        ),
+        UiProduct(
+            product = Product(
+                name = "Denim Jacket",
+                platformName = "Amazon",
+                priceRaw = "₹2,899",
+                lastKnownPrice = 5990,
+                deepLink = "https://amazon.in/product4",
+                imageURL = "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?auto=format&fit=crop&w=400&q=80"
+            ),
+            brand = "Levi's",
+            timeLeftMillis = 45 * 60 * 1000
+        ),
+        UiProduct(
+            product = Product(
+                name = "Floral Print Dress",
+                platformName = "Zara",
+                priceRaw = "₹1,799",
+                lastKnownPrice = 3490,
+                deepLink = "https://zara.com/product5",
+                imageURL = "https://images.unsplash.com/photo-1520975661595-6453be3f7070?auto=format&fit=crop&w=400&q=80"
+            ),
+            brand = "H&M",
+            timeLeftMillis = 90 * 60 * 1000
+        ),
+        UiProduct(
+            product = Product(
+                name = "Leather Handbag",
+                platformName = "Nykaa Fashion",
+                priceRaw = "₹9,999",
+                lastKnownPrice = 15990,
+                deepLink = "https://nykaafashion.com/product6",
+                imageURL = "https://images.unsplash.com/photo-1571689936005-bac784f3979d?auto=format&fit=crop&w=400&q=80"
+            ),
+            brand = "Michael Kors",
+            timeLeftMillis = 4 * 60 * 60 * 1000
+        ),
+        UiProduct(
+            product = Product(
+                name = "Smart Watch Series 8",
+                platformName = "Croma",
+                priceRaw = "₹29,999",
+                lastKnownPrice = 38999,
+                deepLink = "https://croma.com/product7",
+                imageURL = "https://images.unsplash.com/photo-1598970434795-0c54fe7c0642?auto=format&fit=crop&w=400&q=80"
+            ),
+            brand = "Apple",
+            timeLeftMillis = 5 * 60 * 1000
+        ),
+        UiProduct(
+            product = Product(
+                name = "Men's Hoodie",
+                platformName = "H&M",
+                priceRaw = "₹1,199",
+                lastKnownPrice = 2490,
+                deepLink = "https://hm.com/product8",
+                imageURL = "https://images.unsplash.com/photo-1600185365483-26d7e9248b2b?auto=format&fit=crop&w=400&q=80"
+            ),
+            brand = "Nike",
+            timeLeftMillis = 60 * 60 * 1000
+        )
+    )
 
-
-
+    WatchlistScreenPreviewable(products = products)
+}
 
