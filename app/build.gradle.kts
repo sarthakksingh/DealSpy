@@ -77,7 +77,6 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.gson)
     implementation(libs.coil.compose.v240)
-
     ksp(libs.google.dagger.hilt.compiler)
     implementation(libs.google.dagger.hilt.android)
     implementation(libs.androidx.material)
