@@ -1,5 +1,7 @@
 package com.example.dealspy.view.screens
 
+import android.os.Build
+import androidx.annotation.RequiresExtension
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,16 +25,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.dealspy.data.model.Product
-import com.example.dealspy.state.UiState
+import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.view.utils.BestDealCard
 import com.example.dealspy.view.utils.RemainingProductCard
 import com.example.dealspy.view.utils.ShimmerDealCard
@@ -40,6 +38,7 @@ import com.example.dealspy.view.utils.ShimmerSearchResultCard
 import com.example.dealspy.vm.SearchViewModel
 
 
+@RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PriceCompareScreen(
@@ -47,38 +46,11 @@ fun PriceCompareScreen(
     viewModel: SearchViewModel = hiltViewModel(),
     navController: NavController
 ) {
+    val state by viewModel.priceCompareList.collectAsState()
+
     LaunchedEffect(productName) {
         viewModel.priceCompare(productName)
     }
-
-    val priceCompareState by viewModel.priceCompareList.collectAsState()
-    var isLoading by remember { mutableStateOf(false) }
-
-    var sortedList by remember { mutableStateOf<List<Product>>(emptyList()) }
-    var isFailed by remember { mutableStateOf(false) }
-
-    when (priceCompareState) {
-        is UiState.Success -> {
-            val data = (priceCompareState as UiState.Success<List<Product>>).data
-            sortedList = data.sortedBy { it.price }
-            isFailed = false
-            isLoading = false
-        }
-        is UiState.Failed -> {
-            sortedList = emptyList()
-            isFailed = true
-            isLoading = false
-        }
-        else -> {
-            // keep shimmer as is
-            isLoading = true
-            isFailed = false
-        }
-    }
-
-
-    val topProduct = sortedList.firstOrNull()
-    val remainingProducts = sortedList.drop(1)
 
     Scaffold(
         topBar = {
@@ -107,15 +79,32 @@ fun PriceCompareScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
-        Column(
+
+        UiStateHandler(
+            state = state,
+            onRetry = { viewModel.priceCompare(productName) },
             modifier = Modifier
                 .padding(innerPadding)
                 .padding(16.dp)
-                .fillMaxSize()
-        ) {
-            topProduct?.let {
-                ShimmerDealCard(isLoading = isLoading, contentAfterLoading = {
-                    BestDealCard(it)
+                .fillMaxSize(),
+            onSuccess =
+         { products ->
+            val sorted = products.sortedBy { it.price }
+            val topProduct = sorted.firstOrNull()
+            val remainingProducts = sorted.drop(1)
+
+            if (topProduct == null) {
+                Text(
+                    text = "No Products Found",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                return@UiStateHandler
+            }
+
+            Column(modifier = Modifier.fillMaxSize()) {
+                ShimmerDealCard(isLoading = false, contentAfterLoading = {
+                    BestDealCard(topProduct)
                 })
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -131,7 +120,7 @@ fun PriceCompareScreen(
                 LazyRow {
                     items(remainingProducts) { product ->
                         ShimmerSearchResultCard(
-                            isLoading = isLoading,
+                            isLoading = false,
                             contentAfterLoading = {
                                 RemainingProductCard(product)
                             },
@@ -141,12 +130,8 @@ fun PriceCompareScreen(
                         )
                     }
                 }
-            } ?: // TODO: Have to implement lottie animation for no product found
-            Text(
-                text = "No Products Found",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            }
         }
+        )
     }
 }
