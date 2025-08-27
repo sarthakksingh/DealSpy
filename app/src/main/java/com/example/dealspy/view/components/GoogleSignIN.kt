@@ -1,6 +1,5 @@
 package com.example.dealspy.view.components
 
-import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,32 +11,18 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.dealspy.BuildConfig
-import com.example.dealspy.view.navigation.DealSpyScreens
-import com.example.dealspy.vm.FirebaseAuthViewModel
+import com.example.dealspy.vm.LoginViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.SignInButton
-import com.google.firebase.Firebase
-import com.google.firebase.auth.GoogleAuthProvider
-import com.google.firebase.auth.auth
+
 @Composable
 fun SignInButton(
     modifier: Modifier,
-    navController: NavController,
-    viewModel: FirebaseAuthViewModel = hiltViewModel()
+    loginViewModel: LoginViewModel
 ) {
     val context = LocalContext.current
-
-    val googleSignInOptions = remember {
-        GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
-            .requestEmail()
-            .build()
-    }
-
-    val googleSignInClient = remember {
-        GoogleSignIn.getClient(context, googleSignInOptions)
-    }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -47,52 +32,16 @@ fun SignInButton(
             val account = task.result
             val idToken = account.idToken
             if (idToken != null) {
-                // pass to VM
-                viewModel.signInWithGoogleCredential(
-                    idToken = idToken,
-                    onSuccess = {
-                        // optionally also verify with backend here:
-                        viewModel.getIdToken { firebaseIdToken ->
-                            if (firebaseIdToken != null) {
-                                // send firebaseIdToken to backend
-                                // verifyWithBackend(firebaseIdToken)
-                                android.util.Log.d("FIREBASE_ID_TOKEN", "Firebase ID Token: $firebaseIdToken")
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Could not get Firebase ID token",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
-
-                        Toast.makeText(
-                            context,
-                            "Sign in Successful",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        navController.navigate(DealSpyScreens.WatchListScreen.routes) {
-                            popUpTo(DealSpyScreens.SplashScreen.routes) {
-                                inclusive = true
-                            }
-                        }
-                    },
-                    onFailure = { error ->
-                        Toast.makeText(context, "Sign in Failed: $error", Toast.LENGTH_SHORT).show()
-                    }
-                )
+                loginViewModel.loginWithGoogle(idToken)
             } else {
                 Toast.makeText(context, "Google ID token missing", Toast.LENGTH_SHORT).show()
             }
         } catch (e: Exception) {
-            Toast.makeText(
-                context,
-                "Google Sign in Failed: ${e.message}",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(context, "Google Sign in Failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
+
+    val googleSignInClient = loginViewModel.getGoogleSignInClient()
 
     AndroidView(
         modifier = modifier,
@@ -107,3 +56,4 @@ fun SignInButton(
         }
     )
 }
+

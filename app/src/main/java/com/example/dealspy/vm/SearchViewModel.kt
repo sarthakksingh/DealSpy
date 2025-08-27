@@ -39,7 +39,7 @@ class SearchViewModel @Inject constructor() : ViewModel() {
             } catch (e: HttpException) {
                 _searchList.value = UiState.ServerError
             } catch (e: Exception) {
-                _searchList.value = UiState.Error(e.message ?: "Something went wrong")
+                _searchList.value = UiState.Failed(e.message ?: "Something went wrong")
             }
         }
     }
@@ -59,7 +59,7 @@ class SearchViewModel @Inject constructor() : ViewModel() {
             } catch (e: HttpException) {
                 _priceCompareList.value = UiState.ServerError
             } catch (e: Exception) {
-                _priceCompareList.value = UiState.Error(e.message ?: "Something went wrong")
+                _priceCompareList.value = UiState.Failed(e.message ?: "Something went wrong")
             }
         }
     }

@@ -1,5 +1,5 @@
 package com.example.dealspy.data.model
-import com.google.gson.annotations.SerializedName // <-- Add this import
+import com.google.gson.annotations.SerializedName
 
 data class Product(
     @SerializedName("name")

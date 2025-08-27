@@ -32,13 +32,13 @@ android {
             }
         }
 
-// Correct way (consistent with API_KEY handling):
         buildConfigField(
             "String",
             "GOOGLE_WEB_CLIENT_ID",
             "\"${properties.getProperty("WEB_CLIENT_ID", "")}\""
         )
         buildConfigField("String", "API_KEY", "\"${properties.getProperty("API_KEY", "")}\"")
+        buildConfigField("String","BASE_URL","\"${properties.getProperty("BASE_URL", "")}\"")
         buildTypes {
             release {
                 isMinifyEnabled = false
@@ -96,14 +96,20 @@ dependencies {
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
     implementation("com.google.firebase:firebase-analytics")
+
     // Firebase Authentication
     implementation("com.google.firebase:firebase-auth:22.3.1")
+
     // Optional: Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+
     // Optional: Firebase UI (for pre-built auth UI)
     implementation("com.firebaseui:firebase-ui-auth:8.0.2")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-messaging")
 
-
+    val retrofitVersion = "2.9.0"
+    implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
+    implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
 }

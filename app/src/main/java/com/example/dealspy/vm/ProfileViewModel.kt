@@ -41,7 +41,7 @@ class ProfileViewModel @Inject constructor() : ViewModel() {
             } catch (e: HttpException) {
                 _wishlistState.value = UiState.ServerError
             } catch (e: Exception) {
-                _wishlistState.value = UiState.Error(e.message ?: "Something went wrong")
+                _wishlistState.value = UiState.Failed(e.message ?: "Something went wrong")
             }
         }
     }
@@ -61,7 +61,7 @@ class ProfileViewModel @Inject constructor() : ViewModel() {
             } catch (e: HttpException) {
                 _purchaseHistoryState.value = UiState.ServerError
             } catch (e: Exception) {
-                _purchaseHistoryState.value = UiState.Error(e.message ?: "Something went wrong")
+                _purchaseHistoryState.value = UiState.Failed(e.message ?: "Something went wrong")
             }
         }
     }
@@ -72,19 +72,6 @@ class ProfileViewModel @Inject constructor() : ViewModel() {
 
     fun onClearWatchlist() {
         // TODO: clear both wishlist & purchase history from backend
-    }
-
-    fun signOut(context: Context, onComplete: () -> Unit) {
-        Firebase.auth.signOut()
-        val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
-            .requestEmail()
-            .build()
-
-        val googleSignInClient = GoogleSignIn.getClient(context, googleSignInOptions)
-        googleSignInClient.signOut().addOnCompleteListener {
-            onComplete()
-        }
     }
 
     // 🔧 Dummy repo calls for now (replace with Firebase/your API)

@@ -16,10 +16,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -46,11 +49,13 @@ import com.example.dealspy.vm.ProfileViewModel
 @Composable
 fun ProfileScreen(
     navController: NavController,
+    onLogout: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val wishlistState by viewModel.wishlistState.collectAsState()
     val historyState by viewModel.purchaseHistoryState.collectAsState()
     val context = LocalContext.current
+    var notificationsEnabled by remember { mutableStateOf(true) }
 
     DealSpyTheme {
         Column(
@@ -60,6 +65,17 @@ fun ProfileScreen(
                 .verticalScroll(rememberScrollState())
                 .background(MaterialTheme.colorScheme.background)
         ) {
+            // 🔙 Back Navigation Button
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             // 👤 Profile Info
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -73,7 +89,7 @@ fun ProfileScreen(
                 )
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = "John Doe", // You can load from state later
+                    text = "John Doe",
                     style = MaterialTheme.typography.headlineSmall,
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -89,17 +105,17 @@ fun ProfileScreen(
                 state = wishlistState,
                 modifier = Modifier.fillMaxWidth(),
                 onRetry = { viewModel.loadWishlist() },
-                onSuccess =
-             { wishlist ->
-                LazyRow {
-                    items(wishlist, key = { it.name }) { product ->
-                        WishlistCard(product = product, onDelete = {
-                            viewModel.onDeleteFromWishlist(product)
-                        })
-                        Spacer(modifier = Modifier.width(12.dp))
+                onSuccess = { wishlist ->
+                    LazyRow {
+                        items(wishlist, key = { it.name }) { product ->
+                            WishlistCard(product = product, onDelete = {
+                                viewModel.onDeleteFromWishlist(product)
+                            })
+                            Spacer(modifier = Modifier.width(12.dp))
+                        }
                     }
                 }
-            })
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -111,21 +127,19 @@ fun ProfileScreen(
                 state = historyState,
                 modifier = Modifier.fillMaxWidth(),
                 onRetry = { viewModel.loadPurchaseHistory() },
-                onSuccess =
-             { history ->
-                history.forEach { (product, date) ->
-                    PurchaseHistoryCard(product = product, date = date)
-                    Spacer(modifier = Modifier.height(12.dp))
+                onSuccess = { history ->
+                    history.forEach { (product, date) ->
+                        PurchaseHistoryCard(product = product, date = date)
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
-            })
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             // ⚙️ App Settings
             Text("App Settings", style = MaterialTheme.typography.titleSmall)
             Spacer(modifier = Modifier.height(8.dp))
-
-            var notificationsEnabled by remember { mutableStateOf(true) }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -151,11 +165,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Button(
-                onClick = {
-                    viewModel.signOut(context = context, onComplete = {
-                        // navController.popBackStack()
-                    })
-                },
+                onClick = { onLogout() },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             ) {
@@ -164,7 +174,6 @@ fun ProfileScreen(
         }
     }
 }
-
 
 
 
