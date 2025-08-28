@@ -33,9 +33,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.SearchCategory
 import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.ui.theme.DealSpyTheme
+import com.example.dealspy.view.components.WatchTimeDialog
 import com.example.dealspy.view.utils.PopularCategorySection
 import com.example.dealspy.view.utils.SearchResultCard
 import com.example.dealspy.view.utils.ShimmerSearchResultCard
@@ -50,6 +52,9 @@ fun SearchScreen(
     DealSpyTheme {
         var query by remember { mutableStateOf("") }
         val searchListState by viewModel.searchList.collectAsState()
+        val savedItems by viewModel.savedItems.collectAsState()
+        var dialogProduct by remember { mutableStateOf<Product?>(null) }
+
 
         val popularCategories = listOf(
             SearchCategory(
@@ -148,7 +153,12 @@ fun SearchScreen(
                                 ShimmerSearchResultCard(
                                     isLoading = false,
                                     contentAfterLoading = {
-                                        SearchResultCard(product = product)
+                                        SearchResultCard(
+                                            product = product,
+                                            isSaved = savedItems.contains(product.deepLink),
+                                            onToggleSave = { viewModel.toggleSaveForLater(it) },
+                                            onAddToWatch = {  product -> dialogProduct = product }
+                                        )
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -157,6 +167,17 @@ fun SearchScreen(
                                 Spacer(modifier = Modifier.height(12.dp))
                             }
                         }
+                    }
+
+                    dialogProduct?.let { product ->
+                        WatchTimeDialog(
+                            product = product,
+                            onDismiss = { dialogProduct = null },
+                            onConfirm = { days ->
+                                viewModel.addToWatchlist(product, days)
+                                dialogProduct = null
+                            }
+                        )
                     }
                 }
                 )

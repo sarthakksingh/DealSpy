@@ -1,26 +1,29 @@
 package com.example.dealspy.data.model
-import com.google.gson.annotations.SerializedName // <-- Add this import
+
+import com.google.gson.annotations.SerializedName
 
 data class Product(
     @SerializedName("name")
     val name: String,
 
-    @SerializedName("platform name")
+    @SerializedName("platform")
     val platformName: String,
 
     @SerializedName("price")
     val priceRaw: String,
 
-    @SerializedName("last known price") 
-    val lastKnownPrice: Int,
-
-    @SerializedName("deep link")
+    @SerializedName("deepLink")
     val deepLink: String,
 
-    @SerializedName("image URL")
-    val imageURL: String
-)
-{
+    @SerializedName("imageUrl")
+    val imageURL: String,
+
+    @SerializedName("discount")
+    val discount: String? = null,
+
+    // Keep your existing computed property
+    val lastKnownPrice: Int = 0
+) {
     val price: Int
-        get() = priceRaw.replace("₹", "").toIntOrNull() ?: 0
+        get() = priceRaw.replace("₹", "").replace(",", "").toIntOrNull() ?: 0
 }

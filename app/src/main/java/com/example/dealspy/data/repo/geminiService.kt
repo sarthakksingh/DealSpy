@@ -5,47 +5,78 @@ import com.example.dealspy.data.model.GeminiSearchResponse
 import com.example.dealspy.data.model.Product
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.gson.Gson
+import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
+class GeminiService @Inject constructor() {
 
-object GeminiService {
-    val apiKey = BuildConfig.API_KEY
-
+    private val apiKey = BuildConfig.API_KEY
     private val generativeModel = GenerativeModel(
-        modelName = "gemini-pro",
+        modelName = "gemini-2.5-flash",
         apiKey = apiKey
     )
 
     suspend fun generateSearchSuggestions(productName: String): List<Product> {
         val prompt = """
-                Find specific listings for individual $productName products on brand websites, 
-                Amazon India, Flipkart, Ajio, Myntra, Meesho, Tata CLiQ, Croma, 
-                Blinkit, BigBasket, JioMart, and Instamart. For each product found,
-                extract the product name (including any variants),
-                platform name, price (in INR), the direct product deep link, 
-                and the image URL. Present the results in the following JSON format:
-                ```json
+            Find 5-6 real products for "$productName" from Indian e-commerce sites.
+            Return ONLY valid JSON in this exact format, no extra text:
+            
+            {
+              "products": [
                 {
-                "product": [
-        {
-          "name": "Product Name (Variant)",
-          "platform name": "Platform Name",
-          "price": "Price in INR",
-          "deep link": "Product URL",
-          "image URL": "Image URL"
-         }
-      ]
-    }
-    ```
-    """.trimIndent()
+                  "name": "Exact Product Name",
+                  "platform": "Platform Name", 
+                  "price": "₹1,299",
+                  "deepLink": "https://example.com/product-link",
+                  "imageUrl": "https://example.com/product-image.jpg",
+                  "discount": "20% off"
+                }
+              ]
+            }
+            
+            Ensure:
+            - All products are real and available
+            - Prices include ₹ symbol
+            - Platform names: Amazon, Flipkart, Myntra, Ajio, Croma, etc.
+            - Valid image URLs and product links
+            - No markdown formatting, just pure JSON
+        """.trimIndent()
+
         return try {
             val response = generativeModel.generateContent(prompt)
             val jsonString = response.text ?: return emptyList()
 
-            // Parse JSON into ProductApiResponse
-            val result = Gson().fromJson(jsonString, GeminiSearchResponse::class.java)
-            result.product  // Return List<Product>
+            // Clean the response to extract only JSON
+            val cleanJson = extractJsonFromResponse(jsonString)
+
+            // Parse JSON into GeminiSearchResponse
+            val result = Gson().fromJson(cleanJson, GeminiSearchResponse::class.java)
+            result.products
+
         } catch (e: Exception) {
+            // Log the error for debugging
+            println("Gemini API Error: ${e.message}")
             emptyList()
         }
     }
+
+    private fun extractJsonFromResponse(response: String): String {
+        // Remove markdown code blocks and extra formatting
+        return response
+            //.replace("```
+                .replace("```", "")
+                .trim()
+                .let { cleanText ->
+                    // Find JSON object boundaries
+                    val startIndex = cleanText.indexOf("{")
+                    val endIndex = cleanText.lastIndexOf("}") + 1
+                    if (startIndex >= 0 && endIndex > startIndex) {
+                        cleanText.substring(startIndex, endIndex)
+                    } else {
+                        cleanText
+                    }
+                }
+    }
+
 }

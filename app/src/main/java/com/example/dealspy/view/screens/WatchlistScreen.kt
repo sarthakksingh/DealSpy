@@ -1,9 +1,12 @@
 package com.example.dealspy.view.screens
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,6 +19,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.UiProduct
 import com.example.dealspy.ui.state.UiStateHandler
+import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.utils.ProductCard
 import com.example.dealspy.vm.WatchListViewModel
 
@@ -26,32 +30,57 @@ fun WatchlistScreen(
 ) {
     val state by viewModel.watchListState.collectAsState()
 
-    UiStateHandler(
-        state = state,
-        modifier = Modifier,
-        onRetry = { viewModel.loadWatchlist() },
-        onSuccess = { products ->
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(8.dp)
-            ) {
-                items(products) { uiProduct ->
-                    ProductCard(uiProduct)
+
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Watchlist",
+                navController = navController,
+            )
+        }
+    ) { innerPadding ->
+
+        UiStateHandler(
+            state = state,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            onRetry = { viewModel.loadWatchlist() },
+            onSuccess = { products ->
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    items(products) { uiProduct ->
+                        ProductCard(uiProduct)
+                    }
                 }
             }
-        }
-    )
+        )
+    }
 }
+
 
 
 @Composable
 fun WatchlistScreenPreviewable(products: List<UiProduct>) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        contentPadding = PaddingValues(8.dp)
-    ) {
-        items(products) { uiProduct ->
-            ProductCard(uiProduct)
+    val navController = rememberNavController()
+
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Watchlist",
+                navController = navController,
+            )
+        }
+    ) { innerPadding ->
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            contentPadding = innerPadding
+        ) {
+            items(products) { uiProduct ->
+                ProductCard(uiProduct)
+            }
         }
     }
 }
