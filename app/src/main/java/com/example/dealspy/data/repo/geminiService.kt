@@ -9,8 +9,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-iniService @Inject constructor() {
-
 class GeminiService @Inject constructor() {
 
 
