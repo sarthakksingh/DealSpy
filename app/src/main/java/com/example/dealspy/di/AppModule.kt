@@ -20,4 +20,6 @@ object AppModule {
     @Provides
     @Singleton
     fun providesGeminiService(): GeminiService = GeminiService()
+
 }
+

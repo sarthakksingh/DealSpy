@@ -9,7 +9,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+iniService @Inject constructor() {
+
 class GeminiService @Inject constructor() {
+
 
     private val apiKey = BuildConfig.API_KEY
     private val generativeModel = GenerativeModel(
@@ -64,19 +67,18 @@ class GeminiService @Inject constructor() {
     private fun extractJsonFromResponse(response: String): String {
         // Remove markdown code blocks and extra formatting
         return response
-            //.replace("```
-                .replace("```", "")
-                .trim()
-                .let { cleanText ->
-                    // Find JSON object boundaries
-                    val startIndex = cleanText.indexOf("{")
-                    val endIndex = cleanText.lastIndexOf("}") + 1
-                    if (startIndex >= 0 && endIndex > startIndex) {
-                        cleanText.substring(startIndex, endIndex)
-                    } else {
-                        cleanText
-                    }
+            //.replace("
+            .replace("", "")
+            .trim()
+            .let { cleanText ->
+                // Find JSON object boundaries
+                val startIndex = cleanText.indexOf("{")
+                val endIndex = cleanText.lastIndexOf("}") + 1
+                if (startIndex >= 0 && endIndex > startIndex) {
+                    cleanText.substring(startIndex, endIndex)
+                } else {
+                    cleanText
                 }
+            }
     }
-
 }
