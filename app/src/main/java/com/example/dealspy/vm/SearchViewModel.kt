@@ -6,7 +6,7 @@ import androidx.annotation.RequiresExtension
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.repo.geminiService
+import com.example.dealspy.data.repo.GeminiService
 import com.example.dealspy.ui.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

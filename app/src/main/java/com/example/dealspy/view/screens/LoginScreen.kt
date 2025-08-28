@@ -37,10 +37,10 @@ fun LoginScreen(
             }
         }
 
-        is UiState.Failed -> {
-            val message = (loginState as UiState.Failed).message
+        is UiState.Error -> {
+            val message = (loginState as UiState.Error).message
             // Replace this with your error UI
-            Text(text = "Login failed: $message")
+            Text(text = "Login Error: $message")
         }
         else -> {}
     }
