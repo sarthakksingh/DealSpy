@@ -1,5 +1,6 @@
 package com.example.dealspy.di
 
+import com.example.dealspy.data.repo.GeminiService
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import dagger.Module
@@ -13,5 +14,10 @@ import javax.inject.Singleton
 object AppModule {
 
     @Provides
+    @Singleton
     fun providesFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun providesGeminiService(): GeminiService = GeminiService()
 }
