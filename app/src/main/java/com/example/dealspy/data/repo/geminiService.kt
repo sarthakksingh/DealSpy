@@ -9,7 +9,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class geminiService @Inject constructor() {
+iniService @Inject constructor() {
+
+class GeminiService @Inject constructor() {
+
 
     private val apiKey = BuildConfig.API_KEY
     private val generativeModel = GenerativeModel(

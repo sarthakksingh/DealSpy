@@ -75,7 +75,7 @@ fun ProductCard(uiProduct: UiProduct) {
                     .fillMaxWidth()
                     .padding(10.dp)
             ) {
-                // Load product image
+
                 AsyncImage(
                     model = uiProduct.product.imageURL,
                     contentDescription = uiProduct.product.name,
@@ -92,11 +92,13 @@ fun ProductCard(uiProduct: UiProduct) {
                     text = uiProduct.brand,
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = FontWeight.Bold
-                    )
+                    ),
+                    color = Color.White
                 )
                 Text(
                     text = uiProduct.product.name,
-                    style = MaterialTheme.typography.labelSmall
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color.White
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -105,7 +107,9 @@ fun ProductCard(uiProduct: UiProduct) {
                     Text(
                         text = "₹${uiProduct.product.price}",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
@@ -118,25 +122,25 @@ fun ProductCard(uiProduct: UiProduct) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         text = "${uiProduct.discountPercent}% OFF",
-                        style = MaterialTheme.typography.labelSmall.copy(color = Color.Red)
+                        style = MaterialTheme.typography.labelSmall.copy(color = Color.White)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = "🔻 Price dropped by ₹${uiProduct.product.lastKnownPrice - uiProduct.product.price}",
-                    style = MaterialTheme.typography.labelSmall.copy(color = Color.Red)
+                    text = "🔻₹${uiProduct.product.lastKnownPrice - uiProduct.product.price}",
+                    style = MaterialTheme.typography.labelSmall.copy(color = Color(0xFFFF3366) )
                 )
 
                 Spacer(modifier = Modifier.height(6.dp))
 
                 Box(
                     modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.85f), shape = RoundedCornerShape(8.dp))
+                        .background(Color(0xFFFDFBD4), shape = RoundedCornerShape(8.dp))
                         .padding(horizontal = 8.dp, vertical = 4.dp)
                 ) {
-                    Text(text = "⏳ $timerText", color = Color.White, fontSize = 12.sp)
+                    Text(text = "⏳ $timerText", color = Color(0xFFFF3366), fontSize = 12.sp)
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -154,7 +158,7 @@ fun ProductCard(uiProduct: UiProduct) {
                 }
             }
 
-            // Remove (X) icon top-right
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -165,7 +169,7 @@ fun ProductCard(uiProduct: UiProduct) {
                     modifier = Modifier
                         .size(20.dp)
                         .background(Color.White, CircleShape)
-                        .clickable { },
+                        .clickable {},
                     contentAlignment = Alignment.Center
                 ) {
                     Text("✕", fontSize = 12.sp)

@@ -18,7 +18,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val geminiService: geminiService  // Inject the service
+
+    private val geminiService: GeminiService  // Inject the service
+
 ) : ViewModel() {
 
     private val _searchList = MutableStateFlow<UiState<List<Product>>>(UiState.Loading)
