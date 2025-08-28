@@ -41,7 +41,7 @@ class ProfileViewModel @Inject constructor() : ViewModel() {
             } catch (e: HttpException) {
                 _wishlistState.value = UiState.ServerError
             } catch (e: Exception) {
-                _wishlistState.value = UiState.Failed(e.message ?: "Something went wrong")
+                _wishlistState.value = UiState.Error(e.message ?: "Something went wrong")
             }
         }
     }
@@ -61,7 +61,7 @@ class ProfileViewModel @Inject constructor() : ViewModel() {
             } catch (e: HttpException) {
                 _purchaseHistoryState.value = UiState.ServerError
             } catch (e: Exception) {
-                _purchaseHistoryState.value = UiState.Failed(e.message ?: "Something went wrong")
+                _purchaseHistoryState.value = UiState.Error(e.message ?: "Something went wrong")
             }
         }
     }

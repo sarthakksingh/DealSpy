@@ -37,10 +37,10 @@ class LoginViewModel @Inject constructor(
                     _verifyTokenState.value = UiState.Success(verifyResponse)
                     _loginState.value = UiState.Success(Unit)
                 } else {
-                    _loginState.value = UiState.Failed("Google Sign-In Failed")
+                    _loginState.value = UiState.Error("Google Sign-In Failed")
                 }
             } catch (e: Exception) {
-                _loginState.value = UiState.Failed(e.message ?: "Unknown error during login")
+                _loginState.value = UiState.Error(e.message ?: "Unknown error during login")
             }
         }
     }

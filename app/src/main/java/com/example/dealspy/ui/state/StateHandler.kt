@@ -62,7 +62,7 @@ fun <T> UiStateHandler(
             showDialog = true
         }
 
-        is UiState.Failed -> {
+        is UiState.Error -> {
             errorMessage = state.message
             showDialog = true
         }
