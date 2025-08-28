@@ -6,7 +6,7 @@ import androidx.annotation.RequiresExtension
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.repo.GeminiService
+import com.example.dealspy.data.repo.geminiService
 import com.example.dealspy.ui.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +18,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
+
     private val geminiService: GeminiService  // Inject the service
+
 ) : ViewModel() {
 
     private val _searchList = MutableStateFlow<UiState<List<Product>>>(UiState.Loading)

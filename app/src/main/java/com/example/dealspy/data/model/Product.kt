@@ -26,4 +26,6 @@ data class Product(
 ) {
     val price: Int
         get() = priceRaw.replace("₹", "").replace(",", "").toIntOrNull() ?: 0
+
 }
+
