@@ -16,9 +16,12 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
+import com.example.dealspy.R
+import com.example.dealspy.ui.theme.DealSpyTheme
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,33 +32,38 @@ fun AppTopBar(
     onMoreClick: () -> Unit = {},
 
 ) {
-    TopAppBar(
-        title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFFF3366),
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-        },
-        navigationIcon = {
+
+        TopAppBar(
+            title = {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            },
+            navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
+                        painterResource(R.drawable.back),
                         contentDescription = "Back",
-                        tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        tint = MaterialTheme.colorScheme.onBackground
                     )
                 }
 
-        },
-        actions = {
+            },
+            actions = {
 
-            IconButton(onClick = onMoreClick) {
-                Icon(Icons.Default.MoreVert, contentDescription = "More", tint = MaterialTheme.colorScheme.onPrimaryContainer)
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFDFBD4))
-    )
-}
+                IconButton(onClick = onMoreClick) {
+                    Icon(
+                        Icons.Default.MoreVert,
+                        contentDescription = "More",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+        )
+    }

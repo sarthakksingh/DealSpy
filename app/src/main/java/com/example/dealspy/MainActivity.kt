@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresExtension
 import com.example.dealspy.ui.theme.DealSpyTheme
+import com.example.dealspy.ui.theme.ThemeSelection
 import com.example.dealspy.view.navigation.AppNavigation
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -17,7 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DealSpyTheme {
+            DealSpyTheme(theme = ThemeSelection.Option1) {
                 AppNavigation()
             }
         }
