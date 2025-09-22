@@ -1,18 +1,17 @@
+// Update: data/repo/AuthRepo.kt
 package com.example.dealspy.data.repo
 
 import android.util.Log
 import com.example.dealspy.data.model.CustomResponse
 import com.example.dealspy.data.remote.AuthApi
-import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.suspendCancellableCoroutine
+import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class AuthRepo @Inject constructor(
     private val auth: FirebaseAuth,
     private val authApi: AuthApi
@@ -40,8 +39,26 @@ class AuthRepo @Inject constructor(
         return "Bearer $token"
     }
 
-    suspend fun verifyToken(accessToken: String): CustomResponse<Unit> {
-        return authApi.verifyToken(accessToken)
+    suspend fun getFCMToken(): String {
+        return try {
+            val token = FirebaseMessaging.getInstance().token.await()
+            Log.d("AuthRepo", "FCM Token retrieved: $token")
+            token
+        } catch (e: Exception) {
+            Log.e("AuthRepo", "Failed to get FCM token", e)
+            throw e
+        }
+    }
+
+    // 🔹 SINGLE METHOD - hits /verify endpoint with FCM token
+    suspend fun verifyTokenWithFCM(accessToken: String, fcmToken: String): CustomResponse<Unit> {
+        return try {
+            Log.d("AuthRepo", "Verifying token with FCM: $fcmToken")
+            authApi.verifyToken("Bearer $accessToken", fcmToken)
+        } catch (e: Exception) {
+            Log.e("AuthRepo", "Token verification failed", e)
+            CustomResponse(success = false, message = e.message ?: "Verification failed",null)
+        }
     }
 
     fun isUserSignedIn(): Boolean = auth.currentUser != null

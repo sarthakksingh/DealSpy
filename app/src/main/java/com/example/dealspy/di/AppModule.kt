@@ -1,8 +1,11 @@
+// Update your AppModule.kt
 package com.example.dealspy.di
 
 import android.content.Context
 import com.example.dealspy.BuildConfig
 import com.example.dealspy.data.remote.AuthApi
+import com.example.dealspy.data.remote.WatchlistApi
+import com.example.dealspy.data.remote.SaveForLaterApi
 import com.example.dealspy.data.repo.GeminiService
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -73,5 +76,17 @@ object AppModule {
     @Singleton
     fun provideAuthApi(retrofit: Retrofit): AuthApi {
         return retrofit.create(AuthApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWatchlistApi(retrofit: Retrofit): WatchlistApi {
+        return retrofit.create(WatchlistApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSaveForLaterApi(retrofit: Retrofit): SaveForLaterApi {
+        return retrofit.create(SaveForLaterApi::class.java)
     }
 }

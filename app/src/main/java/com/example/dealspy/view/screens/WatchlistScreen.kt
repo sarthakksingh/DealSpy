@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -19,6 +20,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.UiProduct
+import com.example.dealspy.ui.state.UiState
 import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.ui.theme.ThemeSelection
@@ -33,6 +35,21 @@ fun WatchlistScreen(
 ) {
 
     val state by viewModel.watchListState.collectAsState()
+    val addState by viewModel.addToWatchlistState.collectAsState()
+    val removeState by viewModel.removeFromWatchlistState.collectAsState()
+
+    // 🔹 CALL API EVERY TIME SCREEN OPENS
+    LaunchedEffect(Unit) {
+        viewModel.loadWatchlist()
+    }
+
+    // 🔹 REFRESH AFTER ADD/REMOVE OPERATIONS
+    LaunchedEffect(addState, removeState) {
+        if (addState is UiState.Success || removeState is UiState.Success) {
+            viewModel.resetAddState()
+            viewModel.resetRemoveState()
+        }
+    }
 
    DealSpyTheme {
 

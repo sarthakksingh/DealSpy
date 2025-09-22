@@ -1,10 +1,14 @@
+// Update: data/remote/AuthApi.kt
 package com.example.dealspy.data.remote
 
 import com.example.dealspy.data.model.CustomResponse
-import retrofit2.http.GET
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface AuthApi {
-    @GET("api/auth")
-    suspend fun verifyToken(@Query("token") token: String): CustomResponse<Unit>
+
+    @GET("auth/verify")
+    suspend fun verifyToken(
+        @Header("Authorization") token: String,
+        @Header("X-FCM-TOKEN") fcmToken: String
+    ): CustomResponse<Unit>
 }
