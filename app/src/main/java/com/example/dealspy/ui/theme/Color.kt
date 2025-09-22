@@ -218,6 +218,72 @@ val surfaceContainerHighDarkHighContrast = Color(0xFF3A3B41)
 val surfaceContainerHighestDarkHighContrast = Color(0xFF45464C)
 
 
+val opt1_Primary_Background = Color(0xFF1A2B3C)
+val opt1_Card_Background = Color(0xFF2C3E50)
+val opt1_Text_Primary = Color(0xFFECF0F1)
+val opt1_Text_Secondary_Discount = Color(0xFFBDC3C7)
+val opt1_Price_Highlight = Color(0xFF1ABC9C)
+val opt1_BuyNow_Button = Color(0xFF2ECC71)
+val opt1_Timer_Background = Color(0xFFE74C3C)
+val opt1_Timer_Text = Color(0xFFECF0F1)
+
+
+
+val opt2_Primary_Background = Color(0xFF2C2C2C)
+val opt2_Card_Background = Color(0xFF3D3D3D)
+val opt2_Text_Primary = Color(0xFFF5F5F5)
+val opt2_Text_Secondary_Discount = Color(0xFFCCCCCC)
+val opt2_Price_Highlight = Color(0xFFFFB74D)
+val opt2_BuyNow_Button = Color(0xFFFFA000)
+val opt2_Timer_Background = Color(0xFFD32F2F)
+val opt2_Timer_Text = Color(0xFFF5F5F5)
+
+
+
+val opt3_Primary_Background = Color(0xFF0F3443)
+val opt3_Card_Background = Color(0xFF1A4354)
+val opt3_Text_Primary = Color(0xFFE0E0E0)
+val opt3_Text_Secondary_Discount = Color(0xFFB0BEC5)
+val opt3_Price_Highlight = Color(0xFFFFD54F)
+val opt3_BuyNow_Button = Color(0xFF00BFA5)
+val opt3_Timer_Background = Color(0xFFFF7043)
+val opt3_Timer_Text = Color(0xFFE0E0E0)
+
+
+val opt4_Primary_Background = Color(0xFF121212)
+val opt4_Card_Background = Color(0xFF1E1E1E)
+val opt4_Text_Primary = Color(0xFFF0F0F0)
+val opt4_Text_Secondary_Discount = Color(0xFFBDBDBD)
+val opt4_Price_Highlight = Color(0xFFBB86FC)
+val opt4_BuyNow_Button = Color(0xFF03DAC6)
+val opt4_Timer_Background = Color(0xFFCF6679)
+val opt4_Timer_Text = Color(0xFFF0F0F0)
+
+
+
+val opt5_Primary_Background = Color(0xFF0A2B2F)
+val opt5_Card_Background = Color(0xFF1B3D40)
+val opt5_Text_Primary = Color(0xFFE8F6F6)
+val opt5_Text_Secondary_Discount = Color(0xFFA3C7C7)
+val opt5_Price_Highlight = Color(0xFF7BC96A)
+val opt5_BuyNow_Button = Color(0xFF4CAF50)
+val opt5_Timer_Background = Color(0xFFD32F2F)
+val opt5_Timer_Text = Color(0xFFE8F6F6)
+
+
+val opt6_Primary_Background = Color(0xFF0F0F0F)
+val opt6_Card_Background = Color(0xFF252525)
+val opt6_Text_Primary = Color(0xFFFFFFFF)
+val opt6_Text_Secondary_Discount = Color(0xFFCFCFCF)
+val opt6_Price_Highlight = Color(0xFFFCA311)
+val opt6_BuyNow_Button = Color(0xFFE85D04)
+val opt6_Timer_Background = Color(0xFFCC2936)
+val opt6_Timer_Text = Color(0xFFFFFFFF)
+
+
+
+
+
 
 
 
