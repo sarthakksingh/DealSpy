@@ -41,14 +41,14 @@ fun BottomNavBar(
                         painter = painterResource(id = menuItem.icon),
                         contentDescription = menuItem.labelOfIcon,
                         modifier = Modifier.size(24.dp),
-                        tint = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
+                        tint = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary
                     )
                 },
                 label = {
                     Text(
                         text = menuItem.labelOfIcon,
                         style = MaterialTheme.typography.labelSmall,
-                        color = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
+                        color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onPrimary
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
