@@ -1,5 +1,5 @@
+// Update your UiStateHandler
 package com.example.dealspy.ui.state
-
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -22,11 +22,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
-
 @Composable
 fun <T> UiStateHandler(
     state: UiState<T>,
     onSuccess: @Composable (T) -> Unit,
+    onIdle: @Composable () -> Unit = {}, // 🔹 ADD IDLE HANDLER
     modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null
 ) {
@@ -34,6 +34,12 @@ fun <T> UiStateHandler(
     var errorMessage by remember { mutableStateOf("") }
 
     when (state) {
+        is UiState.Idle -> {
+            // 🔹 HANDLE IDLE STATE
+            showDialog = false
+            onIdle()
+        }
+
         is UiState.Loading -> {
             Box(
                 modifier = modifier.fillMaxSize(),
@@ -66,7 +72,6 @@ fun <T> UiStateHandler(
             errorMessage = state.message
             showDialog = true
         }
-
     }
 
     if (showDialog) {
@@ -101,7 +106,6 @@ fun ErrorDialog(
     onDismiss: () -> Unit,
     onRetry: () -> Unit
 ) {
-
     var visible by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {

@@ -77,6 +77,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.gson)
     implementation(libs.coil.compose.v240)
+    implementation(libs.ui)
     ksp(libs.google.dagger.hilt.compiler)
     implementation(libs.google.dagger.hilt.android)
     implementation(libs.androidx.material)
@@ -115,4 +116,5 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:$retrofitVersion")
 
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.32.0")
 }
