@@ -28,7 +28,7 @@ fun PurchaseHistoryCard(product: Product, date: String) {
         shape = RoundedCornerShape(10.dp),
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+            containerColor = MaterialTheme.colorScheme.onPrimary,
             contentColor = MaterialTheme.colorScheme.onSurface
         )
     ) {
