@@ -31,6 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.dealspy.ui.state.UiStateHandler
+import com.example.dealspy.view.navigation.BottomNavBar
+import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.BestDealCard
 import com.example.dealspy.view.utils.RemainingProductCard
 import com.example.dealspy.view.utils.ShimmerDealCard
@@ -75,6 +77,12 @@ fun PriceCompareScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainer
                 )
+            )
+        },
+        bottomBar = {
+            BottomNavBar(
+                navController = navController,
+                bottomMenu = BottomNavOptions.bottomNavOptions
             )
         },
         containerColor = MaterialTheme.colorScheme.background

@@ -1,19 +1,20 @@
 package com.example.dealspy.view.navigation
+import androidx.annotation.DrawableRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavController
+import com.example.dealspy.R
 
 sealed class BottomNavOptions(
     val route: String,
     val labelOfIcon: String,
-    val icon: ImageVector,
+    @DrawableRes val icon: Int,
     val onOptionClicked: (NavController) -> Unit,
 ) {
     data object WatchlistOption : BottomNavOptions(
         route = DealSpyScreens.WatchListScreen.routes,
         labelOfIcon = "Watchlist",
-        icon = Icons.Default.Home,
+        icon = R.drawable.home,
         onOptionClicked = { navController ->
             navigateWithDebounce(navController, DealSpyScreens.WatchListScreen.routes)
         }
@@ -22,7 +23,7 @@ sealed class BottomNavOptions(
     data object SearchOption : BottomNavOptions(
         route = DealSpyScreens.SearchScreen.routes,
         labelOfIcon = "Search",
-        icon = Icons.Default.Search,
+        icon = R.drawable.search,
         onOptionClicked = { navController ->
             navigateWithDebounce(navController, DealSpyScreens.SearchScreen.routes)
         }
@@ -31,7 +32,7 @@ sealed class BottomNavOptions(
     data object ProfileOption : BottomNavOptions(
         route = DealSpyScreens.ProfileScreen.routes,
         labelOfIcon = "Profile",
-        icon = Icons.Default.AccountCircle,
+        icon = R.drawable.profile,
         onOptionClicked = { navController ->
             navigateWithDebounce(navController, DealSpyScreens.ProfileScreen.routes)
         }

@@ -192,7 +192,7 @@ fun ProductCard(uiProduct: UiProduct) {
             ) {
                 Icon(
                     painterResource(R.drawable.cross),
-                    contentDescription = "Timer",
+                    contentDescription = "delete",
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(18.dp)
                 )
