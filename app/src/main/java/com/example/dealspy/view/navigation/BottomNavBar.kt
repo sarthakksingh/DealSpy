@@ -10,9 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+
 @Composable
 fun BottomNavBar(
     modifier: Modifier = Modifier,
@@ -23,7 +25,7 @@ fun BottomNavBar(
 
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.primary,
-        contentColor = MaterialTheme.colorScheme.onPrimary,
+        contentColor = MaterialTheme.colorScheme.onBackground,
         modifier = modifier
     ) {
         bottomMenu.forEach { menuItem ->
@@ -36,7 +38,7 @@ fun BottomNavBar(
                 onClick = { menuItem.onOptionClicked(navController) },
                 icon = {
                     Icon(
-                        imageVector = menuItem.icon,
+                        painter = painterResource(id = menuItem.icon),
                         contentDescription = menuItem.labelOfIcon,
                         modifier = Modifier.size(24.dp),
                         tint = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onPrimary
@@ -56,4 +58,3 @@ fun BottomNavBar(
         }
     }
 }
-

@@ -40,6 +40,8 @@ import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.components.WatchTimeDialog
+import com.example.dealspy.view.navigation.BottomNavBar
+import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.PopularCategorySection
 import com.example.dealspy.view.utils.SearchResultCard
 import com.example.dealspy.view.utils.ShimmerSearchResultCard
@@ -75,6 +77,12 @@ fun SearchScreen(
                 AppTopBar(
                     title = "Search",
                     navController = navController
+                )
+            },
+            bottomBar = {
+                BottomNavBar(
+                    navController = navController,
+                    bottomMenu = BottomNavOptions.bottomNavOptions
                 )
             },
             containerColor = MaterialTheme.colorScheme.background

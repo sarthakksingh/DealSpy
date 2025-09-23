@@ -25,6 +25,8 @@ import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.ui.theme.ThemeSelection
 import com.example.dealspy.view.components.AppTopBar
+import com.example.dealspy.view.navigation.BottomNavBar
+import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.ProductCard
 import com.example.dealspy.vm.WatchListViewModel
 
@@ -59,6 +61,12 @@ fun WatchlistScreen(
                 AppTopBar(
                     title = "Watchlist",
                     navController = navController,
+                )
+            } ,
+            bottomBar = {
+                BottomNavBar(
+                    navController = navController,
+                    bottomMenu = BottomNavOptions.bottomNavOptions
                 )
             }
         ) { innerPadding ->
