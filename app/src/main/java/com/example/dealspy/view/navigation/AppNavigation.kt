@@ -12,30 +12,32 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import com.example.dealspy.vm.LoginViewModel
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.delay
 
 @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @Composable
 fun AppNavigation(
     navController: NavHostController = rememberNavController()
 ) {
-    // 🔹 ADD LOADING STATE FOR FIREBASE INITIALIZATION
     var isLoading by remember { mutableStateOf(true) }
     var isUserLoggedIn by remember { mutableStateOf(false) }
 
-    // 🔹 WAIT FOR FIREBASE TO INITIALIZE AND RESTORE AUTH STATE
+    // 🔹 WAIT FOR FIREBASE TO PROPERLY RESTORE AUTH STATE
     LaunchedEffect(Unit) {
-        val authStateListener = FirebaseAuth.AuthStateListener { auth ->
-            isUserLoggedIn = auth.currentUser != null
-            isLoading = false // Firebase has initialized
-        }
+        // Give Firebase time to restore persisted auth
+        delay(2000) // 2 seconds should be enough
 
-        Firebase.auth.addAuthStateListener(authStateListener)
+        // Check auth state after Firebase has initialized
+        isUserLoggedIn = Firebase.auth.currentUser != null
+        isLoading = false
+
+        println("🔥 Auth check complete - User logged in: $isUserLoggedIn")
+        println("🔥 Current user: ${Firebase.auth.currentUser?.email}")
     }
 
-    // 🔹 SHOW LOADING WHILE FIREBASE INITIALIZES
+    // 🔹 SHOW LOADING SCREEN WHILE FIREBASE INITIALIZES
     if (isLoading) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -46,7 +48,6 @@ fun AppNavigation(
         return
     }
 
-    // 🔹 NAVIGATION AFTER FIREBASE IS READY
     val startDestination = if (isUserLoggedIn) "main" else "login_graph"
     val loginViewModel: LoginViewModel = hiltViewModel()
 

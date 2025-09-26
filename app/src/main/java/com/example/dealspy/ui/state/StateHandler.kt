@@ -1,4 +1,3 @@
-// Update your UiStateHandler
 package com.example.dealspy.ui.state
 
 import androidx.compose.animation.AnimatedVisibility
@@ -6,27 +5,20 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
 @Composable
 fun <T> UiStateHandler(
     state: UiState<T>,
     onSuccess: @Composable (T) -> Unit,
-    onIdle: @Composable () -> Unit = {}, // 🔹 ADD IDLE HANDLER
+    onIdle: @Composable () -> Unit = {},
     modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null
 ) {
@@ -35,7 +27,6 @@ fun <T> UiStateHandler(
 
     when (state) {
         is UiState.Idle -> {
-            // 🔹 HANDLE IDLE STATE
             showDialog = false
             onIdle()
         }
@@ -55,7 +46,25 @@ fun <T> UiStateHandler(
         }
 
         is UiState.NoData -> {
-            CenterMessage("No results found.", modifier)
+            Column(
+                modifier = modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "No results found",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Pull down to refresh",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
 
         is UiState.NoInternet -> {
@@ -88,13 +97,23 @@ fun <T> UiStateHandler(
 
 @Composable
 fun CenterMessage(message: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    // 🔹 MAKE THIS SCROLLABLE TOO
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Pull down to refresh",
+            style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
