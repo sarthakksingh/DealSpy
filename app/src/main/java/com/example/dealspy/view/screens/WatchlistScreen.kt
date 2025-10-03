@@ -1,5 +1,7 @@
 package com.example.dealspy.view.screens
 
+//TODO: Add add to remove watchlist
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -74,8 +76,6 @@ fun WatchlistScreen(
                 )
             }
         ) { innerPadding ->
-
-            // 🔹 CUSTOM PULL TO REFRESH WITH CENTERED INDICATOR
             PullToRefreshBox(
                 state = pullToRefreshState,
                 isRefreshing = isRefreshing,
@@ -86,10 +86,8 @@ fun WatchlistScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
-                // 🔹 CENTERED PULL-TO-REFRESH INDICATOR
                 indicator = {
                     if (!isApiLoading) {
-                        // 🔹 CENTER THE PULL-TO-REFRESH INDICATOR
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -103,7 +101,6 @@ fun WatchlistScreen(
                             )
                         }
                     }
-                    // 🔹 HIDE INDICATOR WHEN API IS LOADING (SHOW CENTERED ONE INSTEAD)
                 }
             ) {
                 UiStateHandler(

@@ -1,6 +1,7 @@
 package com.example.dealspy.view.screens
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresExtension
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -20,14 +21,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,6 +43,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.SearchCategory
+import com.example.dealspy.ui.state.UiState
 import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.components.AppTopBar
@@ -45,21 +53,38 @@ import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.PopularCategorySection
 import com.example.dealspy.view.utils.SearchResultCard
 import com.example.dealspy.view.utils.ShimmerSearchResultCard
+import com.example.dealspy.vm.SaveForLaterViewModel
 import com.example.dealspy.vm.SearchViewModel
+import com.example.dealspy.vm.WatchListViewModel
+import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 
+//TODO: have to add (Add to watchlist)
 @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @Composable
-
 fun SearchScreen(
-    viewModel: SearchViewModel = hiltViewModel(),
+    searchViewModel: SearchViewModel = hiltViewModel(),
+    watchListViewModel: WatchListViewModel = hiltViewModel(),
+    saveForLaterViewModel: SaveForLaterViewModel=hiltViewModel(),
     navController: NavController
 ) {
     DealSpyTheme {
         var query by remember { mutableStateOf("") }
-        val searchListState by viewModel.searchList.collectAsState()
-        val savedItems by viewModel.savedItems.collectAsState()
         var dialogProduct by remember { mutableStateOf<Product?>(null) }
+
+        val keyboardController = LocalSoftwareKeyboardController.current
+
+        val snackbarHostState = remember { SnackbarHostState() }
+        val coroutineScope = rememberCoroutineScope()
+
+        // Search ViewModel states
+        val searchListState by searchViewModel.searchList.collectAsState()
+        val savedItems by searchViewModel.savedItems.collectAsState()
+
+        // WatchList ViewModel states
+        val addToWatchlistState by watchListViewModel.addToWatchlistState.collectAsState()
+        val removeFromWatchlistState by watchListViewModel.removeFromWatchlistState.collectAsState()
 
         val popularCategories = listOf(
             SearchCategory("Trendy T-Shirts", "https://images.unsplash.com/photo-1600185364241-d1641d75d5b1"),
@@ -71,6 +96,59 @@ fun SearchScreen(
             SearchCategory("Moisturisers", "https://images.unsplash.com/photo-1616745307545-b90f46bcb8b3"),
             SearchCategory("Cups & Mugs", "https://images.unsplash.com/photo-1507914372432-45d43f3b1590")
         )
+
+        LaunchedEffect(addToWatchlistState) {
+            when (addToWatchlistState) {
+                is UiState.Success -> {
+                    Log.d("SearchScreen", "Product added to watchlist successfully")
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "Product added to watchlist!",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                    watchListViewModel.resetAddState()
+                }
+                is UiState.Error -> {
+                    Log.e("SearchScreen", "Failed to add product to watchlist: ${(addToWatchlistState as UiState.Error).message}")
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "Failed to add to watchlist: ${(addToWatchlistState as UiState.Error).message}",
+                            duration = SnackbarDuration.Long
+                        )
+                    }
+                    watchListViewModel.resetAddState()
+                }
+                is UiState.Loading -> {
+                    Log.d("SearchScreen", "Adding product to watchlist...")
+                }
+                else -> {}
+            }
+        }
+
+        LaunchedEffect(removeFromWatchlistState) {
+            when (removeFromWatchlistState) {
+                is UiState.Success -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "Product removed from watchlist!",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                    watchListViewModel.resetRemoveState()
+                }
+                is UiState.Error -> {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "Failed to remove from watchlist: ${(removeFromWatchlistState as UiState.Error).message}",
+                            duration = SnackbarDuration.Long
+                        )
+                    }
+                    watchListViewModel.resetRemoveState()
+                }
+                else -> {}
+            }
+        }
 
         Scaffold(
             topBar = {
@@ -85,9 +163,11 @@ fun SearchScreen(
                     bottomMenu = BottomNavOptions.bottomNavOptions
                 )
             },
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState)
+            },
             containerColor = MaterialTheme.colorScheme.background
         ) { innerPadding ->
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -109,7 +189,8 @@ fun SearchScreen(
                             modifier = Modifier.padding(8.dp),
                             onClick = {
                                 if (query.isNotBlank()) {
-                                    viewModel.searchProductList(query)
+                                    searchViewModel.searchProductList(query)
+                                    keyboardController?.hide()
                                 }
                             }
                         ) {
@@ -125,7 +206,8 @@ fun SearchScreen(
                     keyboardActions = KeyboardActions(
                         onSearch = {
                             if (query.isNotBlank()) {
-                                viewModel.searchProductList(query)
+                                searchViewModel.searchProductList(query)
+                                keyboardController?.hide()
                             }
                         }
                     )
@@ -136,16 +218,16 @@ fun SearchScreen(
                 if (query.isBlank()) {
                     PopularCategorySection(
                         categories = popularCategories,
-                        onCategoryClick = {
-                            query = it
-                            viewModel.searchProductList(it)
+                        onCategoryClick = { category ->
+                            query = category
+                            searchViewModel.searchProductList(category)
                         }
                     )
                 } else {
                     UiStateHandler(
                         state = searchListState,
                         modifier = Modifier.fillMaxSize(),
-                        onRetry = { viewModel.searchProductList(query) },
+                        onRetry = { searchViewModel.searchProductList(query) },
                         onSuccess = { products ->
                             Column(modifier = Modifier.fillMaxSize()) {
                                 Text(
@@ -153,7 +235,9 @@ fun SearchScreen(
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontWeight = FontWeight.SemiBold
                                 )
+
                                 Spacer(modifier = Modifier.height(8.dp))
+
                                 LazyColumn {
                                     items(products) { product ->
                                         ShimmerSearchResultCard(
@@ -162,38 +246,48 @@ fun SearchScreen(
                                                 SearchResultCard(
                                                     product = product,
                                                     isSaved = savedItems.contains(product.deepLink),
-                                                    onToggleSave = { viewModel.toggleSaveForLater(it) },
-                                                    onAddToWatch = { product -> dialogProduct = product }
+                                                    onToggleSave = { productToSave ->
+                                                        saveForLaterViewModel.addToSaveForLater(productToSave)
+                                                    },
+                                                    onAddToWatch = { productToWatch ->
+                                                        dialogProduct = productToWatch
+                                                        Log.d("SearchScreen", "Opening watch dialog for: ${productToWatch.name}")
+                                                    }
                                                 )
                                             },
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(16.dp)
+                                                .padding(vertical = 8.dp)
                                         )
-                                        Spacer(modifier = Modifier.height(12.dp))
                                     }
                                 }
-                            }
-
-                            dialogProduct?.let { product ->
-                                WatchTimeDialog(
-                                    product = product,
-                                    onDismiss = { dialogProduct = null },
-                                    onConfirm = { days ->
-                                        viewModel.addToWatchlist(product, days)
-                                        dialogProduct = null
-                                    }
-                                )
                             }
                         }
                     )
                 }
             }
         }
+
+        dialogProduct?.let { product ->
+            WatchTimeDialog(
+                product = product,
+                onDismiss = {
+                    Log.d("SearchScreen", "Watch dialog dismissed")
+                    dialogProduct = null
+                },
+                onConfirm = { days ->
+                    Log.d("SearchScreen", "Adding ${product.name} to watchlist for $days days")
+
+                    val watchEndDate = LocalDate.now().plusDays(days.toLong())
+
+                    watchListViewModel.addToWatchlist(product, watchEndDate)
+
+                    dialogProduct = null
+                }
+            )
+        }
     }
 }
-
-
 
 @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @Preview(showBackground = true)
@@ -203,60 +297,3 @@ fun SearchScreenPreview() {
         SearchScreen(navController = rememberNavController())
     }
 }
-
-
-
-//@Preview(showBackground = true, showSystemUi = false)
-//@Composable
-//fun SearchScreenPreview() {
-//    DealSpyTheme(theme = com.example.dealspy.ui.theme.ThemeSelection.Option2) {
-//
-//        val navController = rememberNavController()
-//        val queryState = remember { mutableStateOf("T-Shirt") }
-//
-//        val sampleProducts = listOf(
-//            com.example.dealspy.data.model.Product(
-//                name = "Slim Fit Trousers",
-//                platformName = "Myntra",
-//                priceRaw = "₹1,259",
-//                lastKnownPrice = 2990,
-//                deepLink = "https://myntra.com/product1",
-//                imageURL = "https://images.unsplash.com/photo-1602810318120-e9b7b0d93d3e?auto=format&fit=crop&w=400&q=80"
-//            ),
-//            com.example.dealspy.data.model.Product(
-//                name = "Casual Sneakers",
-//                platformName = "Flipkart",
-//                priceRaw = "₹2,499",
-//                lastKnownPrice = 4990,
-//                deepLink = "https://flipkart.com/product3",
-//                imageURL = "https://images.unsplash.com/photo-1561808844-08c53b6bdc02?auto=format&fit=crop&w=400&q=80"
-//            )
-//        )
-//
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .padding(16.dp)
-//        ) {
-//            // Reuse the SearchResultCard inside a lazy list to preview cards
-//            LazyColumn {
-//                items(sampleProducts) { product ->
-//                    ShimmerSearchResultCard(
-//                        isLoading = false,
-//                        contentAfterLoading = {
-//                            SearchResultCard(
-//                                product = product,
-//                                isSaved = false,
-//                                onToggleSave = { /* noop for preview */ },
-//                                onAddToWatch = { /* noop for preview */ }
-//                            )
-//                        },
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(8.dp)
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
