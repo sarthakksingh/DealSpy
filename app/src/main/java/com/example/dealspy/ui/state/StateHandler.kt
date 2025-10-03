@@ -96,30 +96,6 @@ fun <T> UiStateHandler(
 }
 
 @Composable
-fun CenterMessage(message: String, modifier: Modifier = Modifier) {
-    // 🔹 MAKE THIS SCROLLABLE TOO
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = message,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Pull down to refresh",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
 fun ErrorDialog(
     message: String,
     onDismiss: () -> Unit,

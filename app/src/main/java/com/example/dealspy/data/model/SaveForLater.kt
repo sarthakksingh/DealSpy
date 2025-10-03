@@ -8,7 +8,7 @@ data class SaveForLater(
     val productName: String,
 
     @SerializedName("imageUrl")
-    val imageUrl: String,
+    val imageUrl: String?=null,
 
     @SerializedName("desc")
     val desc: String

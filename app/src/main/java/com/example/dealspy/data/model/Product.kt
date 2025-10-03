@@ -16,7 +16,7 @@ data class Product(
     val deepLink: String,
 
     @SerializedName("imageUrl")
-    val imageURL: String,
+    val imageURL: String?=null,
 
     @SerializedName("discount")
     val discount: String? = null,
