@@ -3,6 +3,7 @@ package com.example.dealspy.vm
 import android.net.http.HttpException
 import android.os.Build
 import androidx.annotation.RequiresExtension
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
@@ -18,8 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-
-    private val geminiService: GeminiService  // Inject the service
+    private val geminiService: GeminiService
 
 ) : ViewModel() {
 

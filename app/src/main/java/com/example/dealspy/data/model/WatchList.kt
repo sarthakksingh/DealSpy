@@ -12,12 +12,11 @@ data class WatchList(
     val watchEndDate: String?, // ISO date string from backend
 
     @SerializedName("imageUrl")
-    val imageUrl: String,
+    val imageUrl: String?,
 
     @SerializedName("desc")
     val desc: String
 ) {
-    // Helper property to parse date
     val watchEndDateParsed: LocalDate?
         get() = try {
             if (watchEndDate != null) LocalDate.parse(watchEndDate) else null

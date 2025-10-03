@@ -46,9 +46,7 @@ class WatchListViewModel @Inject constructor(
                 if (response.success == true && response.data != null) {
                     Log.d("WatchListViewModel", "Watchlist loaded: ${response.data.size} items")
 
-                    // 🔹 CONVERT WatchList (DTO) → Product → UiProduct
                     val uiProducts = response.data.map { watchlistItem ->
-                        // Convert WatchlistDTO to Product
                         val product = Product(
                             name = watchlistItem.productName,
                             platformName = extractPlatformFromDesc(watchlistItem.desc),
@@ -139,23 +137,6 @@ class WatchListViewModel @Inject constructor(
             }
         }
     }
-
-    // 🔹 YOUR EXISTING METHODS
-    fun onProductClick(product: Product) {
-        Log.d("WatchListViewModel", "Product clicked: ${product.name}")
-        // Handle navigation or open deep link
-    }
-
-    fun onAddProduct() {
-        Log.d("WatchListViewModel", "Add product clicked")
-        // Handle navigation to add product screen
-    }
-
-    fun onDeleteProduct(product: Product) {
-        removeFromWatchlist(product.name)
-    }
-
-    // 🔹 HELPER METHODS
     private fun calculateTimeLeft(watchEndDate: LocalDate?): Long {
         return if (watchEndDate != null) {
             val endTime = watchEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()

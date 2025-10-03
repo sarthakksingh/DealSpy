@@ -4,6 +4,7 @@ package com.example.dealspy.data.repo
 import android.util.Log
 import com.example.dealspy.data.model.CustomResponse
 import com.example.dealspy.data.model.SaveForLater
+import com.example.dealspy.data.model.UserDetail
 import com.example.dealspy.data.remote.SaveForLaterApi
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.tasks.await
@@ -22,6 +23,22 @@ class SaveForLaterRepository @Inject constructor(
         val token = idTokenResult.token ?: throw Exception("Token is null")
         return "Bearer $token"
     }
+
+    suspend fun getUserProfile(): CustomResponse<UserDetail> {
+        return try {
+            val token = getAuthToken()
+            Log.d("SaveForLaterRepository", "Fetching user profile...")
+            saveForLaterApi.getProfile(token)
+        } catch (e: Exception) {
+            Log.e("SaveForLaterRepository", "Failed to get user profile", e)
+            CustomResponse(
+                success = false,
+                message = e.message ?: "Failed to fetch user profile",
+                data = null
+            )
+        }
+    }
+
 
     suspend fun getSaveForLater(): CustomResponse<List<SaveForLater>> {
         return try {
