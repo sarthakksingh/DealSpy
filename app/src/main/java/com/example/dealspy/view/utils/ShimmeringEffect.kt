@@ -1,5 +1,7 @@
 package com.example.dealspy.view.utils
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
@@ -20,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -87,7 +90,99 @@ fun ShimmerDealCard(
     }
 }
 
-//Horizontal cards of price compare screen
+
+@Composable
+fun ShimmerCard(
+    modifier: Modifier = Modifier
+) {
+    val transition = rememberInfiniteTransition(label = "shimmer")
+    val translateAnim by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1000f,
+        animationSpec = infiniteRepeatable(
+            tween(1200, easing = LinearEasing),
+            RepeatMode.Restart
+        ), label = "shimmer"
+    )
+
+    val brush = Brush.linearGradient(
+        colors = listOf(
+            Color.LightGray.copy(alpha = 0.6f),
+            Color.LightGray.copy(alpha = 0.2f),
+            Color.LightGray.copy(alpha = 0.6f)
+        ),
+        start = Offset.Zero,
+        end = Offset(x = translateAnim, y = translateAnim)
+    )
+
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            // Image placeholder
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(brush)
+            )
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                // Platform name placeholder
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.4f)
+                        .height(20.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(brush)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Price placeholder
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .height(24.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(brush)
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Discount placeholder
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth(0.3f)
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(brush)
+                )
+            }
+
+            // Button placeholder
+            Box(
+                modifier = Modifier
+                    .width(80.dp)
+                    .height(36.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(brush)
+            )
+        }
+    }
+}
+
+
+
 @Composable
 fun ShimmerHorizontalCard(
     isLoading: Boolean,

@@ -95,7 +95,10 @@ fun ProfileScreen(
                     .verticalScroll(rememberScrollState())
                     .background(MaterialTheme.colorScheme.background)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally) {
                     val photoUrl = viewModel.getUserPhotoUrl()
                     if (photoUrl != null) {
                         AsyncImage(
@@ -105,7 +108,7 @@ fun ProfileScreen(
                                 .build(),
                             contentDescription = "Profile Picture",
                             modifier = Modifier
-                                .size(60.dp)
+                                .size(120.dp)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.primaryContainer),
                             contentScale = ContentScale.Crop
@@ -115,14 +118,15 @@ fun ProfileScreen(
                             imageVector = Icons.Default.Person,
                             contentDescription = null,
                             modifier = Modifier
-                                .size(60.dp)
+                                .size(120.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer),
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                            .padding(24.dp),
                             tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
                         text = viewModel.getUserDisplayName(),
@@ -148,7 +152,8 @@ fun ProfileScreen(
                         }
                     }
                     is UiState.Success -> {
-                        if ((saveForLaterState as UiState.Success<List<Product>>).data.isEmpty()) {
+                        val products = (saveForLaterState as UiState.Success<List<Product>>).data
+                        if (products.isEmpty()) {
                             Text(
                                 text = "No saved items yet",
                                 style = MaterialTheme.typography.bodyMedium,
@@ -159,16 +164,22 @@ fun ProfileScreen(
                             LazyRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp)
+                                    .height(200.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                items((saveForLaterState as UiState.Success<List<Product>>).data, key = { it.name }) { product ->
+                                items(
+                                    items = products,
+                                    key = { it.name }
+                                ) { product ->
                                     WishlistCard(
                                         product = product,
                                         onDelete = {
                                             viewModel.onDeleteFromSaveForLater(product)
+                                        },
+                                        onAddToWatchlist = { productToAdd ->
+                                            viewModel.addToWatchlist(productToAdd)
                                         }
                                     )
-                                    Spacer(modifier = Modifier.width(12.dp))
                                 }
                             }
                         }
@@ -199,6 +210,7 @@ fun ProfileScreen(
                     }
                 }
 
+
                 Spacer(modifier = Modifier.height(54.dp))
 
                 Row(
@@ -226,7 +238,7 @@ fun ProfileScreen(
                         )
                     ) {
                         Text(
-                            text = "Clear Saved Items",
+                            text = "App Settings",
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }

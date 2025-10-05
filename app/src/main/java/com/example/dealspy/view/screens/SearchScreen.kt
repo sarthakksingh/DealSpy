@@ -60,7 +60,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 
-//TODO: have to add (Add to watchlist)
+
 @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @Composable
 fun SearchScreen(
@@ -71,18 +71,16 @@ fun SearchScreen(
 ) {
     DealSpyTheme {
         var query by remember { mutableStateOf("") }
-        var dialogProduct by remember { mutableStateOf<Product?>(null) }
+        //var dialogProduct by remember { mutableStateOf<Product?>(null) }
 
         val keyboardController = LocalSoftwareKeyboardController.current
 
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
 
-        // Search ViewModel states
         val searchListState by searchViewModel.searchList.collectAsState()
         val savedItems by searchViewModel.savedItems.collectAsState()
 
-        // WatchList ViewModel states
         val addToWatchlistState by watchListViewModel.addToWatchlistState.collectAsState()
         val removeFromWatchlistState by watchListViewModel.removeFromWatchlistState.collectAsState()
 
@@ -229,28 +227,30 @@ fun SearchScreen(
                         modifier = Modifier.fillMaxSize(),
                         onRetry = { searchViewModel.searchProductList(query) },
                         onSuccess = { products ->
-                            Column(modifier = Modifier.fillMaxSize()) {
+                            Column(modifier = Modifier.fillMaxSize(),horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
                                 Text(
                                     text = "Showing results for \"$query\"",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    fontWeight = FontWeight.SemiBold
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold
                                 )
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 LazyColumn {
+
                                     items(products) { product ->
                                         ShimmerSearchResultCard(
                                             isLoading = false,
                                             contentAfterLoading = {
                                                 SearchResultCard(
                                                     product = product,
-                                                    isSaved = savedItems.contains(product.deepLink),
+                                                    isSaved = savedItems.contains(product.deepLink), // FIX: Use actual saved state
                                                     onToggleSave = { productToSave ->
-                                                        saveForLaterViewModel.addToSaveForLater(productToSave)
+                                                        searchViewModel.toggleSaveForLater(productToSave) // FIX: Use SearchViewModel method
                                                     },
                                                     onAddToWatch = { productToWatch ->
-                                                        dialogProduct = productToWatch
+                                                        //dialogProduct = productToWatch
+                                                        watchListViewModel.addToWatchlist(product)
                                                         Log.d("SearchScreen", "Opening watch dialog for: ${productToWatch.name}")
                                                     }
                                                 )
@@ -260,6 +260,7 @@ fun SearchScreen(
                                                 .padding(vertical = 8.dp)
                                         )
                                     }
+
                                 }
                             }
                         }
@@ -268,24 +269,24 @@ fun SearchScreen(
             }
         }
 
-        dialogProduct?.let { product ->
-            WatchTimeDialog(
-                product = product,
-                onDismiss = {
-                    Log.d("SearchScreen", "Watch dialog dismissed")
-                    dialogProduct = null
-                },
-                onConfirm = { days ->
-                    Log.d("SearchScreen", "Adding ${product.name} to watchlist for $days days")
-
-                    val watchEndDate = LocalDate.now().plusDays(days.toLong())
-
-                    watchListViewModel.addToWatchlist(product, watchEndDate)
-
-                    dialogProduct = null
-                }
-            )
-        }
+//        dialogProduct?.let { product ->
+//            WatchTimeDialog(
+//                product = product,
+//                onDismiss = {
+//                    Log.d("SearchScreen", "Watch dialog dismissed")
+//                    dialogProduct = null
+//                },
+//                onConfirm = { days ->
+//                    Log.d("SearchScreen", "Adding ${product.name} to watchlist for $days days")
+//
+//                    val watchEndDate = LocalDate.now().plusDays(days.toLong())
+//
+//                    watchListViewModel.addToWatchlist(product, watchEndDate)
+//
+//                    dialogProduct = null
+//                }
+//            )
+//        }
     }
 }
 
