@@ -38,7 +38,7 @@ android {
             "\"${properties.getProperty("WEB_CLIENT_ID", "")}\""
         )
         buildConfigField("String", "API_KEY", "\"${properties.getProperty("API_KEY", "")}\"")
-        buildConfigField("String","BASE_URL","\"${properties.getProperty("BASE_URL", "")}\"")
+        buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL", "")}\"")
         buildTypes {
             release {
                 isMinifyEnabled = false
@@ -108,8 +108,7 @@ dependencies {
     // Add these missing imports
 
 
-
-            // Optional: Firebase UI (for pre-built auth UI)
+    // Optional: Firebase UI (for pre-built auth UI)
     implementation("com.firebaseui:firebase-ui-auth:8.0.2")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.firebase:firebase-auth-ktx")
@@ -122,4 +121,5 @@ dependencies {
 
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
     implementation("com.google.accompanist:accompanist-swiperefresh:0.32.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
 }

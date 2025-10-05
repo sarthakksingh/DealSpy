@@ -13,72 +13,45 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 import javax.inject.Inject
-
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val authRepo: AuthRepo,
     private val googleSignInClient: GoogleSignInClient
 ) : ViewModel() {
 
-    fun getGoogleSignInClient() = googleSignInClient
-
     private val _loginState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
     val loginState = _loginState.asStateFlow()
 
-    private val _verifyTokenState = MutableStateFlow<UiState<CustomResponse<Unit>>>(UiState.Idle)
-    val verifyTokenState = _verifyTokenState.asStateFlow()
-
-    fun loginWithGoogle(idToken: String) {
+    fun loginWithGoogle(firebaseIdToken: String) {
         viewModelScope.launch {
             try {
                 _loginState.value = UiState.Loading
-                Log.d("LoginViewModel", "Starting Google login process...")
+                Log.d("LoginViewModel", "Firebase already authenticated, calling backend...")
 
-                // Step 1: Authenticate with Firebase
-                val loginSuccess = authRepo.signInWithGoogleCredential(idToken)
+                val fcmToken = authRepo.getFCMToken()
+                Log.d("LoginViewModel", "FCM Token: $fcmToken")
 
-                if (loginSuccess) {
-                    Log.d("LoginViewModel", "Firebase authentication successful")
+                val verifyResponse = authRepo.verifyTokenWithFCM(firebaseIdToken, fcmToken)
 
-                    // Step 2: Get Firebase ID Token
-                    val firebaseToken = authRepo.getIdToken()
-                    val cleanToken = firebaseToken.removePrefix("Bearer ")
-
-                    // Step 3: Get FCM Token
-                    val fcmToken = authRepo.getFCMToken()
-                    Log.d("LoginViewModel", "FCM Token retrieved: $fcmToken")
-
-                    // Step 4: Verify token + Save user data with FCM
-                    Log.d("LoginViewModel", "Calling /verify endpoint with FCM token...")
-                    val verifyResponse = authRepo.verifyTokenWithFCM(cleanToken, fcmToken)
-
-                    if (verifyResponse.success == true) {
-                        Log.d("LoginViewModel", "User verified and data saved successfully!")
-                        _verifyTokenState.value = UiState.Success(verifyResponse)
-                        _loginState.value = UiState.Success(Unit)
-                    } else {
-                        _loginState.value =
-                            UiState.Error("Backend verification failed: ${verifyResponse.message}")
-                    }
-
+                if (verifyResponse.success) {
+                    Log.d("LoginViewModel", "Backend verification successful!")
+                    _loginState.value = UiState.Success(Unit)
                 } else {
-                    _loginState.value =
-                        UiState.Error("Google authentication failed. Please try again.")
+                    _loginState.value = UiState.Error("Backend verification failed: ${verifyResponse.message}")
                 }
+
             } catch (e: UnknownHostException) {
-                // Network error
-                Log.e("LoginViewModel", "Network error during login", e)
+                Log.e("LoginViewModel", "Network error", e)
                 _loginState.value = UiState.NoInternet
             } catch (e: Exception) {
-                Log.e("LoginViewModel", "Login process failed: ${e.message}", e)
-                _loginState.value = UiState.Error(e.message ?: "An unexpected error occurred")
+                Log.e("LoginViewModel", "Backend call failed: ${e.message}", e)
+                _loginState.value = UiState.Error(e.message ?: "Unknown error occurred")
             }
         }
     }
 
     fun resetStates() {
         _loginState.value = UiState.Idle
-        _verifyTokenState.value = UiState.Idle
         Log.d("LoginViewModel", "States reset to Idle")
     }
 }
