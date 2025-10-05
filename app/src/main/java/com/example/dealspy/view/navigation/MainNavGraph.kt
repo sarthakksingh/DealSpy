@@ -17,10 +17,10 @@ import com.google.firebase.auth.auth
 
 @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
-    // 🔹 CREATE NESTED NAVIGATION GRAPH WITH "main" ROUTE
+
     navigation(
-        startDestination = DealSpyScreens.WatchListScreen.routes, // Default screen after login
-        route = "main" // This matches the route you're navigating to!
+        startDestination = DealSpyScreens.WatchListScreen.routes,
+        route = "main"
     ) {
         composable(DealSpyScreens.WatchListScreen.routes) {
             WatchlistScreen(navController = navController)
@@ -50,3 +50,42 @@ fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
         }
     }
 }
+
+
+
+
+
+
+//fun NavGraphBuilder.mainNavGraph(navController: NavHostController) {
+//    navigation(
+//        startDestination = DealSpyScreens.WatchListScreen.routes,
+//        route = "main"
+//    ) {
+//        composable(DealSpyScreens.WatchListScreen.routes) {
+//            WatchlistScreen(navController = navController)
+//        }
+//
+//        composable(DealSpyScreens.SearchScreen.routes) {
+//            SearchScreen(navController = navController)
+//        }
+//
+//        composable(DealSpyScreens.ProfileScreen.routes) {
+//            ProfileScreen(navController, onLogout = {
+//                Firebase.auth.signOut()
+//                navController.navigate("login_graph") {
+//                    popUpTo("main") { inclusive = true }
+//                }
+//            })
+//        }
+//
+//        composable(
+//            route = "${DealSpyScreens.PriceCompareScreen.routes}/{product}",
+//            arguments = listOf(navArgument("product") { type = NavType.StringType })
+//        ) { backStackEntry ->
+//            val product = backStackEntry.arguments?.getString("product")
+//            product?.let {
+//                PriceCompareScreen(productName = it, navController = navController)
+//            }
+//        }
+//    }
+//}

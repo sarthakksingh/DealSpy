@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.UserDetail
+import com.example.dealspy.data.model.WatchList
 import com.example.dealspy.data.repo.SaveForLaterRepository
+import com.example.dealspy.data.repo.WatchlistRepository
 import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -19,8 +21,10 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val saveForLaterRepository: SaveForLaterRepository,
+    private val watchlistRepository: WatchlistRepository, // ADD THIS
     private val auth: FirebaseAuth
 ) : ViewModel() {
+
 
     private val _currentUser = MutableStateFlow<FirebaseUser?>(null)
     val currentUser = _currentUser.asStateFlow()
@@ -33,6 +37,11 @@ class ProfileViewModel @Inject constructor(
 
     private val _saveForLaterState = MutableStateFlow<UiState<List<Product>>>(UiState.Loading)
     val saveForLaterState = _saveForLaterState.asStateFlow()
+
+    // Add this state flow for watchlist operations
+    private val _addToWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
+    val addToWatchlistState = _addToWatchlistState.asStateFlow()
+
 
     init {
         loadCurrentUser()
@@ -98,6 +107,40 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun addToWatchlist(product: Product) {
+        viewModelScope.launch {
+            try {
+                _addToWatchlistState.value = UiState.Loading
+
+                Log.d("ProfileViewModel", "Adding ${product.name} to watchlist")
+                val watchlistItem = WatchList(
+                    productName = product.name,
+                    watchEndDate = null, // No time limit as requested
+                    imageUrl = product.imageURL,
+                    desc = createDescFromProduct(product)
+                )
+
+                watchlistRepository.addToWatchlist(watchlistItem)
+                _addToWatchlistState.value = UiState.Success("Added to watchlist!")
+
+            } catch (e: UnknownHostException) {
+                _addToWatchlistState.value = UiState.NoInternet
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Error adding to watchlist", e)
+                _addToWatchlistState.value = UiState.Error(e.message ?: "Failed to add to watchlist")
+            }
+        }
+    }
+
+    private fun createDescFromProduct(product: Product): String {
+        return "${product.platformName} - ${product.priceRaw} - ${product.name}"
+    }
+
+    fun resetAddToWatchlistState() {
+        _addToWatchlistState.value = UiState.Idle
+    }
+
+
     private fun convertSaveForLaterToProducts(saveForLaterItems: List<com.example.dealspy.data.model.SaveForLater>) {
         try {
             if (saveForLaterItems.isEmpty()) {
@@ -158,7 +201,7 @@ class ProfileViewModel @Inject constructor(
                     profile.saveForLater.forEach { item ->
                         saveForLaterRepository.removeFromSaveForLater(item.productName)
                     }
-                    loadUserProfile()
+                   // loadUserProfile()
                 } else {
                     Log.d("ProfileViewModel", "No items to clear")
                 }
