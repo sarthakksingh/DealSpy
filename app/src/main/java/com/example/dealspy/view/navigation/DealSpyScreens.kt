@@ -6,4 +6,10 @@ sealed class DealSpyScreens(val routes: String) {
     object SearchScreen: DealSpyScreens("search_screen")
     object PriceCompareScreen: DealSpyScreens("price_compare_screen")
     object WatchListScreen: DealSpyScreens("watchlist_screen")
+
+    companion object {
+        fun createPriceCompareRoute(productName: String): String {
+            return "price_compare_screen/$productName"
+        }
+    }
 }

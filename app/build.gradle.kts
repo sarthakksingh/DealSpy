@@ -78,6 +78,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.coil.compose.v240)
     implementation(libs.ui)
+    implementation(libs.androidx.compose.material3)
     ksp(libs.google.dagger.hilt.compiler)
     implementation(libs.google.dagger.hilt.android)
     implementation(libs.androidx.material)
@@ -103,8 +104,12 @@ dependencies {
 
     // Optional: Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("androidx.compose.material:material-icons-extended")
+    // Add these missing imports
 
-    // Optional: Firebase UI (for pre-built auth UI)
+
+
+            // Optional: Firebase UI (for pre-built auth UI)
     implementation("com.firebaseui:firebase-ui-auth:8.0.2")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.google.firebase:firebase-auth-ktx")

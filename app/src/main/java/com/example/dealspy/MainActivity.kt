@@ -18,7 +18,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            DealSpyTheme(theme = ThemeSelection.Option1) {
+            DealSpyTheme(theme = ThemeSelection.Option2) {
                 AppNavigation()
             }
         }

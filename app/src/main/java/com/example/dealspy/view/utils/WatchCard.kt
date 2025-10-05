@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -24,11 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,39 +37,40 @@ import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.example.dealspy.R
 import com.example.dealspy.data.model.UiProduct
-import com.example.dealspy.ui.theme.DealSpyTheme
-import kotlinx.coroutines.delay
-import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("DefaultLocale")
 @Composable
-fun ProductCard(uiProduct: UiProduct) {
+fun ProductCard(uiProduct: UiProduct,
+                onCardClick: (String) -> Unit = {},
+                onDelete: (UiProduct) -> Unit = {})
+{
 
     val context = LocalContext.current
-    var remainingTime by remember { mutableLongStateOf(uiProduct.timeLeftMillis) }
+
 
     // Timer logic
-    LaunchedEffect(Unit) {
-        while (remainingTime > 0) {
-            delay(1000L)
-            remainingTime -= 1000L
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        while (remainingTime > 0) {
+//            delay(1000L)
+//            remainingTime -= 1000L
+//        }
+//    }
 
-    val hours = TimeUnit.MILLISECONDS.toHours(remainingTime)
-    val minutes = TimeUnit.MILLISECONDS.toMinutes(remainingTime) % 60
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(remainingTime) % 60
-    val timerText = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+//    val hours = TimeUnit.MILLISECONDS.toHours(remainingTime)
+//    val minutes = TimeUnit.MILLISECONDS.toMinutes(remainingTime) % 60
+//    val seconds = TimeUnit.MILLISECONDS.toSeconds(remainingTime) % 60
+//    val timerText = String.format("%02d:%02d:%02d", hours, minutes, seconds)
 
     Card(
         modifier = Modifier
             .padding(8.dp)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable { onCardClick(uiProduct.product.name) },
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-        // colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimaryContainer)
+
     ) {
         Box {
             Column(
@@ -143,30 +138,30 @@ fun ProductCard(uiProduct: UiProduct) {
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                Box(
-                    modifier = Modifier
-                        .background(
-                            MaterialTheme.colorScheme.errorContainer,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(horizontal = 8.dp, vertical = 4.dp)
-                ) {
-                    Row(modifier = Modifier.padding(horizontal = 4.dp)) {
-
-                        Icon(
-                            painterResource(R.drawable.clock),
-                            contentDescription = "Timer",
-                            tint = MaterialTheme.colorScheme.onErrorContainer,
-                            modifier = Modifier.size(18.dp)
-                        )
-
-                        Text(
-                            text = " $timerText",
-                            color = MaterialTheme.colorScheme.onErrorContainer,
-                            fontSize = 15.sp
-                        )
-                    }
-                }
+//                Box(
+//                    modifier = Modifier
+//                        .background(
+//                            MaterialTheme.colorScheme.errorContainer,
+//                            shape = RoundedCornerShape(8.dp)
+//                        )
+//                        .padding(horizontal = 8.dp, vertical = 4.dp)
+//                ) {
+//                    Row(modifier = Modifier.padding(horizontal = 4.dp)) {
+//
+//                        Icon(
+//                            painterResource(R.drawable.clock),
+//                            contentDescription = "Timer",
+//                            tint = MaterialTheme.colorScheme.onErrorContainer,
+//                            modifier = Modifier.size(18.dp)
+//                        )
+//
+//                        Text(
+//                            text = " $timerText",
+//                            color = MaterialTheme.colorScheme.onErrorContainer,
+//                            fontSize = 15.sp
+//                        )
+//                    }
+//                }
 
                 Spacer(modifier = Modifier.height(6.dp))
 
@@ -191,12 +186,17 @@ fun ProductCard(uiProduct: UiProduct) {
                 contentAlignment = Alignment.TopEnd
             ) {
                 Icon(
-                    painterResource(R.drawable.cross),
+                    painter = painterResource(R.drawable.cross),
                     contentDescription = "delete",
                     tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier
+                        .size(18.dp)
+                        .clickable {
+                            onDelete(uiProduct)
+                        }
                 )
             }
+
         }
     }
 }

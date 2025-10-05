@@ -62,14 +62,59 @@ class GeminiService @Inject constructor() {
         }
     }
 
+    suspend fun generatePriceComparison(productName: String): List<Product> {
+        val prompt = """
+        Find price comparisons for the specific product "$productName" across multiple Indian e-commerce platforms.
+        Focus on finding the EXACT same product or very similar variants.
+        Return ONLY valid JSON in this exact format, no extra text:
+        
+        {
+          "products": [
+            {
+              "name": "$productName (Brand/Variant)",
+              "platform": "Platform Name",
+              "price": "₹12,999",
+              "deepLink": "https://platform.com/product-link",
+              "imageUrl": "https://platform.com/product-image.jpg",
+              "discount": "25% off"
+            }
+          ]
+        }
+        
+        Requirements:
+        - Find prices on Amazon India, Flipkart, Myntra, Ajio, Croma, Tata CLiQ
+        - Sort by price (lowest to highest)
+        - Include actual discount information if available
+        - Ensure all links and images are valid
+        - Focus on the same product model/variant
+        - Include at least 4-6 different platform results
+    """.trimIndent()
+
+        return try {
+            val response = generativeModel.generateContent(prompt)
+            val jsonString = response.text ?: return emptyList()
+
+            val cleanJson = extractJsonFromResponse(jsonString)
+            val result = Gson().fromJson(cleanJson, GeminiSearchResponse::class.java)
+
+
+            result.products.sortedBy { it.price }
+
+        } catch (e: Exception) {
+            println("Gemini Price Comparison Error: ${e.message}")
+            emptyList()
+        }
+    }
+
+
     private fun extractJsonFromResponse(response: String): String {
-        // Remove markdown code blocks and extra formatting
+
         return response
-            //.replace("
+
             .replace("", "")
             .trim()
             .let { cleanText ->
-                // Find JSON object boundaries
+
                 val startIndex = cleanText.indexOf("{")
                 val endIndex = cleanText.lastIndexOf("}") + 1
                 if (startIndex >= 0 && endIndex > startIndex) {

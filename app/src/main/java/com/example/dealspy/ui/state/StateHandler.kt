@@ -16,10 +16,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun <T> UiStateHandler(
+    modifier: Modifier = Modifier,
     state: UiState<T>,
     onSuccess: @Composable (T) -> Unit,
     onIdle: @Composable () -> Unit = {},
-    modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null
 ) {
     var showDialog by remember { mutableStateOf(false) }
