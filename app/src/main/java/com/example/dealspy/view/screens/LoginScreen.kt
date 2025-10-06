@@ -94,7 +94,7 @@ fun LoginScreen(
     Box(modifier = Modifier.fillMaxSize()) {
 
         Image(
-            painter = painterResource(id = R.drawable.img),
+            painter = painterResource(id = R.drawable.onboarding),
             contentDescription = "Background",
             modifier = Modifier
                 .fillMaxSize(),

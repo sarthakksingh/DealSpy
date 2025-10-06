@@ -20,7 +20,10 @@ fun NavGraphBuilder.loginNavGraph(
                 loginViewModel = loginViewModel,
                 onLoginSuccess = {
                     navController.navigate("main") {
-                        popUpTo("login_graph") { inclusive = true }
+                        popUpTo("login_graph") {
+                            inclusive = true
+                            saveState = true
+                        }
                     }
                 }
             )
