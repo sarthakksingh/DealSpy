@@ -2,6 +2,7 @@ package com.example.dealspy.view.screens
 
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresExtension
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -33,7 +34,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,77 +44,91 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.SearchCategory
 import com.example.dealspy.ui.state.UiState
 import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.components.AppTopBar
-import com.example.dealspy.view.components.WatchTimeDialog
 import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.PopularCategorySection
 import com.example.dealspy.view.utils.SearchResultCard
 import com.example.dealspy.view.utils.ShimmerSearchResultCard
-import com.example.dealspy.vm.SaveForLaterViewModel
 import com.example.dealspy.vm.SearchViewModel
 import com.example.dealspy.vm.WatchListViewModel
 import kotlinx.coroutines.launch
-import java.time.LocalDate
-
-
 
 @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @Composable
 fun SearchScreen(
     searchViewModel: SearchViewModel = hiltViewModel(),
     watchListViewModel: WatchListViewModel = hiltViewModel(),
-    saveForLaterViewModel: SaveForLaterViewModel=hiltViewModel(),
     navController: NavController
 ) {
-    DealSpyTheme {
+    val context = LocalContext.current
+
         var query by remember { mutableStateOf("") }
-        //var dialogProduct by remember { mutableStateOf<Product?>(null) }
-
         val keyboardController = LocalSoftwareKeyboardController.current
-
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
 
         val searchListState by searchViewModel.searchList.collectAsState()
         val savedItems by searchViewModel.savedItems.collectAsState()
-
+        val saveForLaterState by searchViewModel.saveForLaterState.collectAsState()
         val addToWatchlistState by watchListViewModel.addToWatchlistState.collectAsState()
         val removeFromWatchlistState by watchListViewModel.removeFromWatchlistState.collectAsState()
+
 
         val popularCategories = listOf(
             SearchCategory("Trendy T-Shirts", "https://images.unsplash.com/photo-1600185364241-d1641d75d5b1"),
             SearchCategory("Bold Lipsticks", "https://images.unsplash.com/photo-1598214886801-617ec3b86a9d"),
             SearchCategory("Hair Care", "https://images.unsplash.com/photo-1615461066841-1bb63b0cf72e"),
             SearchCategory("Backpacks", "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f"),
-            SearchCategory("Tshirts", "https://images.unsplash.com/photo-1584467735871-594d63f4f01b"),
+            SearchCategory("T-Shirts", "https://images.unsplash.com/photo-1584467735871-594d63f4f01b"),
             SearchCategory("Sweatshirts", "https://images.unsplash.com/photo-1618354691327-3c0c4b773482"),
             SearchCategory("Moisturisers", "https://images.unsplash.com/photo-1616745307545-b90f46bcb8b3"),
             SearchCategory("Cups & Mugs", "https://images.unsplash.com/photo-1507914372432-45d43f3b1590")
         )
 
+        // FIXED: Handle Save For Later state changes - use local variables
+        LaunchedEffect(saveForLaterState) {
+            val currentState = saveForLaterState
+            when (currentState) {
+                is UiState.Success -> {
+                    Toast.makeText(context, currentState.data, Toast.LENGTH_SHORT).show()
+                    searchViewModel.resetSaveForLaterState()
+                }
+                is UiState.Error -> {
+                    Toast.makeText(context, "Error: ${currentState.message}", Toast.LENGTH_SHORT).show()
+                    searchViewModel.resetSaveForLaterState()
+                }
+                is UiState.NoInternet -> {
+                    Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
+                    searchViewModel.resetSaveForLaterState()
+                }
+                else -> { /* Do nothing for Loading and Idle states */ }
+            }
+        }
+
+        // FIXED: Handle Add to Watchlist state changes - use local variables
         LaunchedEffect(addToWatchlistState) {
-            when (addToWatchlistState) {
+            val currentState = addToWatchlistState
+            when (currentState) {
                 is UiState.Success -> {
                     Log.d("SearchScreen", "Product added to watchlist successfully")
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
-                            message = "Product added to watchlist!",
+                            message = currentState.data.toString(),
                             duration = SnackbarDuration.Short
                         )
                     }
                     watchListViewModel.resetAddState()
                 }
                 is UiState.Error -> {
-                    Log.e("SearchScreen", "Failed to add product to watchlist: ${(addToWatchlistState as UiState.Error).message}")
+                    Log.e("SearchScreen", "Failed to add product to watchlist: ${currentState.message}")
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
-                            message = "Failed to add to watchlist: ${(addToWatchlistState as UiState.Error).message}",
+                            message = "Failed to add to watchlist: ${currentState.message}",
                             duration = SnackbarDuration.Long
                         )
                     }
@@ -124,12 +141,14 @@ fun SearchScreen(
             }
         }
 
+        // FIXED: Handle Remove from Watchlist state changes - use local variables
         LaunchedEffect(removeFromWatchlistState) {
-            when (removeFromWatchlistState) {
+            val currentState = removeFromWatchlistState
+            when (currentState) {
                 is UiState.Success -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
-                            message = "Product removed from watchlist!",
+                            message = currentState.data.toString(),
                             duration = SnackbarDuration.Short
                         )
                     }
@@ -138,7 +157,7 @@ fun SearchScreen(
                 is UiState.Error -> {
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(
-                            message = "Failed to remove from watchlist: ${(removeFromWatchlistState as UiState.Error).message}",
+                            message = "Failed to remove from watchlist: ${currentState.message}",
                             duration = SnackbarDuration.Long
                         )
                     }
@@ -227,7 +246,10 @@ fun SearchScreen(
                         modifier = Modifier.fillMaxSize(),
                         onRetry = { searchViewModel.searchProductList(query) },
                         onSuccess = { products ->
-                            Column(modifier = Modifier.fillMaxSize(),horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                                 Text(
                                     text = "Showing results for \"$query\"",
                                     style = MaterialTheme.typography.titleSmall,
@@ -237,21 +259,19 @@ fun SearchScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 LazyColumn {
-
                                     items(products) { product ->
                                         ShimmerSearchResultCard(
                                             isLoading = false,
                                             contentAfterLoading = {
                                                 SearchResultCard(
                                                     product = product,
-                                                    isSaved = savedItems.contains(product.deepLink), // FIX: Use actual saved state
+                                                    isSaved = savedItems.contains(product.deepLink),
                                                     onToggleSave = { productToSave ->
-                                                        searchViewModel.toggleSaveForLater(productToSave) // FIX: Use SearchViewModel method
+                                                        searchViewModel.toggleSaveForLater(productToSave)
                                                     },
                                                     onAddToWatch = { productToWatch ->
-                                                        //dialogProduct = productToWatch
                                                         watchListViewModel.addToWatchlist(product)
-                                                        Log.d("SearchScreen", "Opening watch dialog for: ${productToWatch.name}")
+                                                        Log.d("SearchScreen", "Adding to watchlist: ${productToWatch.name}")
                                                     }
                                                 )
                                             },
@@ -260,7 +280,6 @@ fun SearchScreen(
                                                 .padding(vertical = 8.dp)
                                         )
                                     }
-
                                 }
                             }
                         }
@@ -268,33 +287,16 @@ fun SearchScreen(
                 }
             }
         }
-
-//        dialogProduct?.let { product ->
-//            WatchTimeDialog(
-//                product = product,
-//                onDismiss = {
-//                    Log.d("SearchScreen", "Watch dialog dismissed")
-//                    dialogProduct = null
-//                },
-//                onConfirm = { days ->
-//                    Log.d("SearchScreen", "Adding ${product.name} to watchlist for $days days")
-//
-//                    val watchEndDate = LocalDate.now().plusDays(days.toLong())
-//
-//                    watchListViewModel.addToWatchlist(product, watchEndDate)
-//
-//                    dialogProduct = null
-//                }
-//            )
-//        }
     }
-}
+
+
+
 
 @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @Preview(showBackground = true)
 @Composable
 fun SearchScreenPreview() {
-    DealSpyTheme(theme = com.example.dealspy.ui.theme.ThemeSelection.Option2) {
+    DealSpyTheme {
         SearchScreen(navController = rememberNavController())
     }
 }

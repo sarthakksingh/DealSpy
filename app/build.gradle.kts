@@ -101,6 +101,7 @@ dependencies {
 
     // Firebase Authentication
     implementation("com.google.firebase:firebase-auth:22.3.1")
+    implementation("androidx.core:core-splashscreen:1.2.0-rc01")
 
     // Optional: Google Sign-In
     implementation("com.google.android.gms:play-services-auth:20.7.0")

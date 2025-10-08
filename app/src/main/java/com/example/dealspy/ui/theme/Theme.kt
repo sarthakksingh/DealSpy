@@ -6,16 +6,16 @@ import androidx.compose.runtime.Composable
 
 
 enum class ThemeSelection {
-    Option1, // Cool & Professional
-    Option2, // Warm & Inviting
-    Option3, // Modern & Vibrant
-    Option4, // Elegant & Minimalist
-    Option5, // Deep Forest Green
-    Option6  // Retro Sunset Dark
+    Theme1, // Cool & Professional
+    Theme2, // Warm & Inviting
+    Theme3, // Modern & Vibrant
+    Theme4, // Elegant & Minimalist
+    Theme5, // Deep Forest Green
+    Theme6  // Retro Sunset Dark
 }
 
 
-private val option1ColorScheme = darkColorScheme(
+private val Theme1ColorScheme = darkColorScheme(
     background = opt1_Primary_Background,
     surface = opt1_Card_Background,
     onBackground = opt1_Text_Primary,
@@ -30,7 +30,7 @@ private val option1ColorScheme = darkColorScheme(
 )
 
 
-private val option2ColorScheme = darkColorScheme(
+private val Theme2ColorScheme = darkColorScheme(
     background = opt2_Primary_Background,
     surface = opt2_Card_Background,
     onBackground = opt2_Text_Primary,
@@ -45,7 +45,7 @@ private val option2ColorScheme = darkColorScheme(
 )
 
 
-private val option3ColorScheme = darkColorScheme(
+private val Theme3ColorScheme = darkColorScheme(
     background = opt3_Primary_Background,
     surface = opt3_Card_Background,
     onBackground = opt3_Text_Primary,
@@ -60,7 +60,7 @@ private val option3ColorScheme = darkColorScheme(
 )
 
 
-private val option4ColorScheme = darkColorScheme(
+private val Theme4ColorScheme = darkColorScheme(
     background = opt4_Primary_Background,
     surface = opt4_Card_Background,
     onBackground = opt4_Text_Primary,
@@ -75,7 +75,7 @@ private val option4ColorScheme = darkColorScheme(
 )
 
 
-private val option5ColorScheme = darkColorScheme(
+private val Theme5ColorScheme = darkColorScheme(
     background = opt5_Primary_Background,
     surface = opt5_Card_Background,
     onBackground = opt5_Text_Primary,
@@ -90,7 +90,7 @@ private val option5ColorScheme = darkColorScheme(
 )
 
 
-private val option6ColorScheme = darkColorScheme(
+private val Theme6ColorScheme = darkColorScheme(
     background = opt6_Primary_Background,
     surface = opt6_Card_Background,
     onBackground = opt6_Text_Primary,
@@ -106,16 +106,16 @@ private val option6ColorScheme = darkColorScheme(
 
 @Composable
 fun DealSpyTheme(
-    theme: ThemeSelection = ThemeSelection.Option1,
+    theme: ThemeSelection = ThemeSelection.Theme1,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when (theme) {
-        ThemeSelection.Option1 -> option1ColorScheme
-        ThemeSelection.Option2 -> option2ColorScheme
-        ThemeSelection.Option3 -> option3ColorScheme
-        ThemeSelection.Option4 -> option4ColorScheme
-        ThemeSelection.Option5 -> option5ColorScheme
-        ThemeSelection.Option6 -> option6ColorScheme
+        ThemeSelection.Theme1 -> Theme1ColorScheme
+        ThemeSelection.Theme2 -> Theme2ColorScheme
+        ThemeSelection.Theme3 -> Theme3ColorScheme
+        ThemeSelection.Theme4 -> Theme4ColorScheme
+        ThemeSelection.Theme5 -> Theme5ColorScheme
+        ThemeSelection.Theme6 -> Theme6ColorScheme
     }
 
     MaterialTheme(
@@ -123,4 +123,5 @@ fun DealSpyTheme(
         typography = Typography,
         content = content
     )
+
 }
