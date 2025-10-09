@@ -95,7 +95,7 @@ class WatchListViewModel @Inject constructor(
                 // 🔹 CONVERT Product → WatchlistDTO
                 val watchlistItem = WatchList(
                     productName = product.name,
-                    watchEndDate = watchEndDate?.toString() ?: LocalDate.now().plusDays(30).toString(),
+                    watchEndDate = null,
                     imageUrl = product.imageURL,
                     desc = createDescFromProduct(product)
                 )
@@ -143,26 +143,24 @@ class WatchListViewModel @Inject constructor(
             val currentTime = System.currentTimeMillis()
             maxOf(0L, endTime - currentTime)
         } else {
-            // Default: 30 days
+
             30 * 24 * 60 * 60 * 1000L
         }
     }
 
     private fun extractPlatformFromDesc(desc: String): String {
-        // Parse platform name from description
-        // Example: "Amazon - Electronics" -> "Amazon"
+
         return desc.substringBefore(" - ").takeIf { it.isNotBlank() } ?: "Unknown"
     }
 
     private fun extractPriceFromDesc(desc: String): String {
-        // Try to extract price from description
-        // You can implement regex to find price patterns
+
         val priceRegex = "₹[\\d,]+".toRegex()
         return priceRegex.find(desc)?.value ?: "₹0"
     }
 
     private fun createDescFromProduct(product: Product): String {
-        // Create description from product info
+
         return "${product.platformName} - ${product.priceRaw} - ${product.name}"
     }
 

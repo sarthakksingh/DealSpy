@@ -1,15 +1,24 @@
-// Create: data/model/SaveForLater.kt
+
 package com.example.dealspy.data.model
 
 import com.google.gson.annotations.SerializedName
+
 
 data class SaveForLater(
     @SerializedName("productName")
     val productName: String,
 
-    @SerializedName("imageUrl")
-    val imageUrl: String?=null,
+    @SerializedName("platformName")
+    val platformName: String,
 
-    @SerializedName("desc")
-    val desc: String
+    @SerializedName("lastKnownPrice")
+    val lastKnownPrice: Int,
+
+    @SerializedName("deepLink")
+    val deepLink: String,
+
+    @SerializedName("imageURL")
+    val imageURL: String?=null,
+
 )
+

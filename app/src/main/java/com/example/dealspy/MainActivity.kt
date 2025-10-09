@@ -2,17 +2,16 @@ package com.example.dealspy
 
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresExtension
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.dealspy.ui.theme.DealSpyTheme
-import com.example.dealspy.ui.theme.ThemeSelection
 import com.example.dealspy.view.navigation.AppNavigation
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import com.example.dealspy.vm.ThemeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -31,7 +30,11 @@ class MainActivity : ComponentActivity() {
 
         window.statusBarColor = android.graphics.Color.BLACK
         setContent {
-            DealSpyTheme(theme = ThemeSelection.Option2) {
+            val themeVm: ThemeViewModel = hiltViewModel()
+            val currentTheme by themeVm.theme.collectAsState()
+
+            DealSpyTheme(theme = currentTheme)
+            {
                 AppNavigation()
             }
         }

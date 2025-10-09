@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
+import com.example.dealspy.data.model.SaveForLater
 import com.example.dealspy.data.model.UserDetail
 import com.example.dealspy.data.model.WatchList
 import com.example.dealspy.data.repo.SaveForLaterRepository
@@ -15,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
 import java.net.UnknownHostException
 import javax.inject.Inject
 
@@ -35,7 +37,7 @@ class ProfileViewModel @Inject constructor(
     private val _profileState = MutableStateFlow<UiState<UserDetail>>(UiState.Idle)
     val profileState = _profileState.asStateFlow()
 
-    private val _saveForLaterState = MutableStateFlow<UiState<List<Product>>>(UiState.Loading)
+    private val _saveForLaterState = MutableStateFlow<UiState<List<SaveForLater>>>(UiState.Loading)
     val saveForLaterState = _saveForLaterState.asStateFlow()
 
     // Add this state flow for watchlist operations
@@ -89,7 +91,7 @@ class ProfileViewModel @Inject constructor(
                 Log.e("ProfileViewModel", "Network error loading profile", e)
                 _profileState.value = UiState.NoInternet
                 _saveForLaterState.value = UiState.NoInternet
-            } catch (e: retrofit2.HttpException) {
+            } catch (e: HttpException) {
                 Log.e("ProfileViewModel", "Server error loading profile", e)
                 _profileState.value = UiState.ServerError
                 _saveForLaterState.value = UiState.ServerError
@@ -115,7 +117,7 @@ class ProfileViewModel @Inject constructor(
                 Log.d("ProfileViewModel", "Adding ${product.name} to watchlist")
                 val watchlistItem = WatchList(
                     productName = product.name,
-                    watchEndDate = null, // No time limit as requested
+                    watchEndDate = null,
                     imageUrl = product.imageURL,
                     desc = createDescFromProduct(product)
                 )
@@ -141,7 +143,7 @@ class ProfileViewModel @Inject constructor(
     }
 
 
-    private fun convertSaveForLaterToProducts(saveForLaterItems: List<com.example.dealspy.data.model.SaveForLater>) {
+    private fun convertSaveForLaterToProducts(saveForLaterItems: List<SaveForLater>) {
         try {
             if (saveForLaterItems.isEmpty()) {
                 _saveForLaterState.value = UiState.NoData
@@ -150,14 +152,13 @@ class ProfileViewModel @Inject constructor(
             }
 
             val products = saveForLaterItems.map { saveForLaterItem ->
-                Product(
-                    name = saveForLaterItem.productName,
-                    platformName = extractPlatformFromDesc(saveForLaterItem.desc ?: ""),
-                    priceRaw = extractPriceFromDesc(saveForLaterItem.desc ?: ""),
-                    deepLink = extractDeepLinkFromDesc(saveForLaterItem.desc ?: ""),
-                    imageURL = saveForLaterItem.imageUrl,
-                    discount = null,
-                    lastKnownPrice = 0
+                SaveForLater(
+                    productName = saveForLaterItem.productName,
+                    platformName = saveForLaterItem.platformName,
+                    deepLink = saveForLaterItem.deepLink,
+                    imageURL = saveForLaterItem.imageURL,
+                    lastKnownPrice = saveForLaterItem.lastKnownPrice,
+
                 )
             }
 
@@ -201,7 +202,7 @@ class ProfileViewModel @Inject constructor(
                     profile.saveForLater.forEach { item ->
                         saveForLaterRepository.removeFromSaveForLater(item.productName)
                     }
-                   // loadUserProfile()
+                    loadUserProfile()
                 } else {
                     Log.d("ProfileViewModel", "No items to clear")
                 }

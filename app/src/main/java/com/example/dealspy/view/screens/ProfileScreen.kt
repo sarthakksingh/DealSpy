@@ -22,11 +22,14 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -49,14 +52,18 @@ import coil.request.ImageRequest
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.ui.state.UiState
 import com.example.dealspy.ui.theme.DealSpyTheme
+import com.example.dealspy.ui.theme.ThemeSelection
 import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.WishlistCard
 import com.example.dealspy.vm.ProfileViewModel
+import com.example.dealspy.vm.ThemeViewModel
 
 
 //TODO: Have to add , remove save for later
+@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun ProfileScreen(
     navController: NavController,
@@ -66,12 +73,15 @@ fun ProfileScreen(
     val saveForLaterState by viewModel.saveForLaterState.collectAsState()
     val currentUser by viewModel.currentUser.collectAsState()
     var notificationsEnabled by remember { mutableStateOf(true) }
+    val themeVm: ThemeViewModel = hiltViewModel()
+    val currentTheme by themeVm.theme.collectAsState()
+    var showThemeSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.loadUserProfile()
     }
 
-    DealSpyTheme {
+
         Scaffold(
             topBar = {
                 AppTopBar(
@@ -224,6 +234,50 @@ fun ProfileScreen(
                     )
                 }
 
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { showThemeSheet = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
+                ) {
+                    Text("Change Theme: ${currentTheme.name}")
+                }
+
+                // Theme picker as a bottom sheet
+                if (showThemeSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showThemeSheet = false }
+                    ) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text("Select Theme", style = MaterialTheme.typography.titleMedium)
+                            Spacer(Modifier.height(12.dp))
+
+                            val options = listOf(
+                                ThemeSelection.Theme1 to "Theme 1",
+                                ThemeSelection.Theme2 to "Theme 2",
+                                ThemeSelection.Theme3 to "Theme 3",
+                                ThemeSelection.Theme4 to "Theme 4",
+                                ThemeSelection.Theme5 to "Theme 5",
+                                ThemeSelection.Theme6 to "Theme 6"
+                            )
+
+                            options.forEach { (value, label) ->
+                                TextButton(
+                                    onClick = {
+                                        themeVm.setTheme(value)
+                                        showThemeSheet = false
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) { Text(label) }
+                            }
+
+                            Spacer(Modifier.height(12.dp))
+                        }
+                    }
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Row(
@@ -259,7 +313,9 @@ fun ProfileScreen(
             }
         }
     }
-}
+
+
+
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -271,3 +327,4 @@ fun ProfileScreenPreview() {
         )
     }
 }
+

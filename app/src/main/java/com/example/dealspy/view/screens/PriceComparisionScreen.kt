@@ -44,7 +44,7 @@ fun PriceCompareScreen(
         viewModel.loadPriceComparison(productName)
     }
 
-    DealSpyTheme {
+
         Scaffold(
             topBar = {
                 AppTopBar(
@@ -122,7 +122,7 @@ fun PriceCompareScreen(
             }
         }
     }
-}
+
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable

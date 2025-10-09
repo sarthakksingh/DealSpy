@@ -7,6 +7,8 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.HiltAndroidApp
+import androidx.core.content.edit
+
 @HiltAndroidApp
 class DealSpy: Application() {
     override fun onCreate() {
@@ -43,11 +45,11 @@ class DealSpy: Application() {
 
             // Clear all app preferences
             val prefs = getSharedPreferences("dealspy_auth", Context.MODE_PRIVATE)
-            prefs.edit().clear().apply()
+            prefs.edit { clear() }
 
             // Clear Firebase internal cache
             val firebasePrefs = getSharedPreferences("com.google.firebase.auth", Context.MODE_PRIVATE)
-            firebasePrefs.edit().clear().apply()
+            firebasePrefs.edit { clear() }
 
             Log.d("DealSpy", "✅ Cleared corrupted Firebase state")
 

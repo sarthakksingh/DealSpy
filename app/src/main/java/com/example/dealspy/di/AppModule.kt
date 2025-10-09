@@ -7,6 +7,8 @@ import com.example.dealspy.data.remote.AuthApi
 import com.example.dealspy.data.remote.WatchlistApi
 import com.example.dealspy.data.remote.SaveForLaterApi
 import com.example.dealspy.data.repo.GeminiService
+import com.example.dealspy.data.repo.SaveForLaterRepository
+import com.example.dealspy.data.repo.ThemeRepository
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -45,6 +47,14 @@ object AppModule {
 
         return GoogleSignIn.getClient(context, googleSignInOptions)
     }
+    @Provides
+    @Singleton
+    fun provideSaveForLaterRepository(
+        saveForLaterApi: SaveForLaterApi,
+        auth: FirebaseAuth
+    ): SaveForLaterRepository {
+        return SaveForLaterRepository(saveForLaterApi, auth)
+    }
 
     @Provides
     @Singleton
@@ -61,6 +71,13 @@ object AppModule {
             )
             .build()
     }
+
+   
+    @Provides
+    @Singleton
+    fun provideThemeRepository(@ApplicationContext context: Context): ThemeRepository =
+        ThemeRepository(context)
+
 
     @Provides
     @Singleton

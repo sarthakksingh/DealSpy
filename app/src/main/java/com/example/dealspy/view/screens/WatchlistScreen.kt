@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,11 +15,13 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -40,7 +40,6 @@ import androidx.navigation.NavController
 import com.example.dealspy.data.model.UiProduct
 import com.example.dealspy.ui.state.UiState
 import com.example.dealspy.ui.state.UiStateHandler
-import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
@@ -81,7 +80,7 @@ fun WatchlistScreen(
         }
     }
 
-    DealSpyTheme {
+
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background,
             topBar = {
@@ -183,7 +182,7 @@ fun WatchlistScreen(
                 )
             }
         }
-    }
+
     if (showDeleteDialog && productToDelete != null) {
         AlertDialog(
             onDismissRequest = {
