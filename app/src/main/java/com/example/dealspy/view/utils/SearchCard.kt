@@ -45,6 +45,7 @@ import com.example.dealspy.data.model.Product
 fun SearchResultCard(
     product: Product,
     isSaved: Boolean,
+    isLoading: Boolean = false,
     onToggleSave: (Product) -> Unit,
     onAddToWatch: (Product) -> Unit
 ) {
@@ -79,8 +80,6 @@ fun SearchResultCard(
                     contentDescription = "Save for Later",
                     tint = if (isSaved) Color(0xFFFF4081) else Color.Gray,
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp)
                         .clickable { onToggleSave(product) }
                 )
             }
