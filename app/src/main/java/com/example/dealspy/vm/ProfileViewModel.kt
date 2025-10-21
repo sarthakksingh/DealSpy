@@ -118,8 +118,7 @@ class ProfileViewModel @Inject constructor(
                 val watchlistItem = WatchList(
                     productName = product.name,
                     watchEndDate = null,
-                    imageUrl = product.imageURL,
-                    desc = createDescFromProduct(product)
+                    imageUrl = product.imageURL
                 )
 
                 watchlistRepository.addToWatchlist(watchlistItem)
@@ -154,11 +153,8 @@ class ProfileViewModel @Inject constructor(
             val products = saveForLaterItems.map { saveForLaterItem ->
                 SaveForLater(
                     productName = saveForLaterItem.productName,
-                    platformName = saveForLaterItem.platformName,
-                    deepLink = saveForLaterItem.deepLink,
                     imageURL = saveForLaterItem.imageURL,
-                    lastKnownPrice = saveForLaterItem.lastKnownPrice,
-
+                    deepLink = saveForLaterItem.deepLink
                 )
             }
 

@@ -46,9 +46,7 @@ class SearchViewModel @Inject constructor(
             try {
                 val response = saveForLaterRepository.getSaveForLater()
                 if (response.success && response.data != null) {
-                    val savedUrls = response.data.map { it.deepLink }.toSet()
-                    _savedItems.value = savedUrls
-                    Log.d("SearchViewModel", "Loaded ${savedUrls.size} saved items from backend")
+                    _savedItems.value = response.data.map { it.deepLink }.toSet()
                 } else {
                     _savedItems.value = emptySet()
                     Log.w("SearchViewModel", "No saved items or error: ${response.message}")
@@ -78,16 +76,15 @@ class SearchViewModel @Inject constructor(
                         _saveForLaterState.value = UiState.Success("Removed from Save for Later")
                         Log.d("SearchViewModel", "Removed ${product.name} from save for later")
                     } else {
-                        _saveForLaterState.value = UiState.Error(response.message ?: "Failed to remove")
+                        _saveForLaterState.value =
+                            UiState.Error(response.message ?: "Failed to remove")
                     }
                 } else {
                     // Add to backend
                     val saveForLaterItem = SaveForLater(
                         productName = product.name,
-                        platformName = product.platformName,
-                        lastKnownPrice = product.lastKnownPrice,
-                        deepLink = product.deepLink,
                         imageURL = product.imageURL,
+                        deepLink = product.deepLink
                     )
 
                     val response = saveForLaterRepository.addToSaveForLater(saveForLaterItem)
@@ -99,7 +96,8 @@ class SearchViewModel @Inject constructor(
                         _saveForLaterState.value = UiState.Success("Added to Save for Later")
                         Log.d("SearchViewModel", "Added ${product.name} to save for later")
                     } else {
-                        _saveForLaterState.value = UiState.Error(response.message ?: "Failed to save")
+                        _saveForLaterState.value =
+                            UiState.Error(response.message ?: "Failed to save")
                     }
                 }
 
