@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -38,29 +39,17 @@ import coil.compose.AsyncImage
 import com.example.dealspy.R
 import com.example.dealspy.data.model.UiProduct
 
+import androidx.compose.ui.text.style.TextOverflow
+
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("DefaultLocale")
 @Composable
-fun ProductCard(uiProduct: UiProduct,
-                onCardClick: (String) -> Unit = {},
-                onDelete: (UiProduct) -> Unit = {})
-{
-
+fun ProductCard(
+    uiProduct: UiProduct,
+    onCardClick: (String) -> Unit = {},
+    onDelete: (UiProduct) -> Unit = {}
+) {
     val context = LocalContext.current
-
-
-    // Timer logic
-//    LaunchedEffect(Unit) {
-//        while (remainingTime > 0) {
-//            delay(1000L)
-//            remainingTime -= 1000L
-//        }
-//    }
-
-//    val hours = TimeUnit.MILLISECONDS.toHours(remainingTime)
-//    val minutes = TimeUnit.MILLISECONDS.toMinutes(remainingTime) % 60
-//    val seconds = TimeUnit.MILLISECONDS.toSeconds(remainingTime) % 60
-//    val timerText = String.format("%02d:%02d:%02d", hours, minutes, seconds)
 
     Card(
         modifier = Modifier
@@ -70,15 +59,14 @@ fun ProductCard(uiProduct: UiProduct,
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-
     ) {
         Box {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp)
+                    .heightIn(min = 260.dp)
             ) {
-
                 AsyncImage(
                     model = uiProduct.product.imageURL,
                     contentDescription = uiProduct.product.name,
@@ -91,17 +79,23 @@ fun ProductCard(uiProduct: UiProduct,
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+
                 Text(
                     text = uiProduct.brand,
-                    style = MaterialTheme.typography.labelMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = MaterialTheme.colorScheme.onSurface
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+
+
                 Text(
                     text = uiProduct.product.name,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.height(36.dp) // ~2 lines of labelSmall
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -114,7 +108,9 @@ fun ProductCard(uiProduct: UiProduct,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
+
                     Spacer(modifier = Modifier.width(6.dp))
+
                     Text(
                         text = "₹${uiProduct.product.lastKnownPrice}",
                         style = MaterialTheme.typography.labelSmall.copy(
@@ -122,10 +118,14 @@ fun ProductCard(uiProduct: UiProduct,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
+
                     Spacer(modifier = Modifier.width(6.dp))
+
                     Text(
                         text = "${uiProduct.discountPercent}% OFF",
-                        style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
                 }
 
@@ -133,35 +133,10 @@ fun ProductCard(uiProduct: UiProduct,
 
                 Text(
                     text = "🔻₹${uiProduct.product.lastKnownPrice - uiProduct.product.price}",
-                    style = MaterialTheme.typography.labelSmall.copy(color = MaterialTheme.colorScheme.onSurface)
+                    style = MaterialTheme.typography.labelSmall.copy(
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-//                Box(
-//                    modifier = Modifier
-//                        .background(
-//                            MaterialTheme.colorScheme.errorContainer,
-//                            shape = RoundedCornerShape(8.dp)
-//                        )
-//                        .padding(horizontal = 8.dp, vertical = 4.dp)
-//                ) {
-//                    Row(modifier = Modifier.padding(horizontal = 4.dp)) {
-//
-//                        Icon(
-//                            painterResource(R.drawable.clock),
-//                            contentDescription = "Timer",
-//                            tint = MaterialTheme.colorScheme.onErrorContainer,
-//                            modifier = Modifier.size(18.dp)
-//                        )
-//
-//                        Text(
-//                            text = " $timerText",
-//                            color = MaterialTheme.colorScheme.onErrorContainer,
-//                            fontSize = 15.sp
-//                        )
-//                    }
-//                }
 
                 Spacer(modifier = Modifier.height(6.dp))
 
@@ -170,14 +145,17 @@ fun ProductCard(uiProduct: UiProduct,
                         val intent = Intent(Intent.ACTION_VIEW, uiProduct.product.deepLink.toUri())
                         context.startActivity(intent)
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp), // fixed height for consistency
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary
+                    ),
                     shape = RoundedCornerShape(50)
                 ) {
                     Text("BUY NOW", color = MaterialTheme.colorScheme.onSurface)
                 }
             }
-
 
             Box(
                 modifier = Modifier
@@ -191,13 +169,9 @@ fun ProductCard(uiProduct: UiProduct,
                     tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
                         .size(18.dp)
-                        .clickable {
-                            onDelete(uiProduct)
-                        }
+                        .clickable { onDelete(uiProduct) }
                 )
             }
-
         }
     }
 }
-

@@ -39,15 +39,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.dealspy.data.model.SearchCategory
 import com.example.dealspy.ui.state.UiState
 import com.example.dealspy.ui.state.UiStateHandler
-import com.example.dealspy.ui.theme.DealSpyTheme
 import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
@@ -80,17 +77,17 @@ fun SearchScreen(
 
 
         val popularCategories = listOf(
-            SearchCategory("Trendy T-Shirts", "https://images.unsplash.com/photo-1600185364241-d1641d75d5b1"),
-            SearchCategory("Bold Lipsticks", "https://images.unsplash.com/photo-1598214886801-617ec3b86a9d"),
-            SearchCategory("Hair Care", "https://images.unsplash.com/photo-1615461066841-1bb63b0cf72e"),
-            SearchCategory("Backpacks", "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f"),
-            SearchCategory("T-Shirts", "https://images.unsplash.com/photo-1584467735871-594d63f4f01b"),
-            SearchCategory("Sweatshirts", "https://images.unsplash.com/photo-1618354691327-3c0c4b773482"),
-            SearchCategory("Moisturisers", "https://images.unsplash.com/photo-1616745307545-b90f46bcb8b3"),
-            SearchCategory("Cups & Mugs", "https://images.unsplash.com/photo-1507914372432-45d43f3b1590")
+            SearchCategory("T-Shirts", "https://image.hm.com/assets/hm/ec/8f/ec8f4c42235bc4d6dece8e0c82da5aa9800e8e36.jpg?imwidth=1260"),
+            SearchCategory("Lipsticks", "https://www.chanel.com/images//t_one//w_0.38,h_0.38,c_crop/q_auto:good,f_autoplus,fl_lossy,dpr_1.1/w_1020/rouge-allure-laque-ultrawear-shine-liquid-lip-colour-87-rouge-irregulier-0-18fl-oz--packshot-default-165087-8840425406494.jpg"),
+            SearchCategory("Hair Care", "https://cdn.tirabeauty.com/v2/billowing-snowflake-434234/tira-p/wrkr/products/pictures/item/free/resize-w:1080/1163626/caN5Xm1ey_-1163626_1.jpg"),
+            SearchCategory("Backpacks", "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/25885877663942eba56602bea225b65e_9366/adidas_Classic_Yay_Sport_Graphic_Backpack_Beige_JX9075_01_00_standard.jpg"),
+            SearchCategory("Shoes", "https://dawntown.co.in/cdn/shop/files/off-white-x-air-jordan-1-retro-high-og-chicago-745075.jpg?v=1749480653&width=1062"),
+            SearchCategory("iphone", "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-17-pro-finish-select-202509-6-9inch-cosmicorange?wid=5120&hei=2880&fmt=webp&qlt=90&.v=NUNzdzNKR0FJbmhKWm5YamRHb05tUzkyK3hWak1ybHhtWDkwUXVINFc0RnVrUzFnTVVSUnNLVnZUWUMxNTBGaGhsQTdPYWVGbmdIenAvNE9qYmZVYVFDb1F2RTNvUEVHRkpGaGtOSVFHak5NTEhXRE11VU1QNVo2eDJsWlpuWHQyaWthYXpzcEpXMExJLy9GTE9wWkNn&traceId=1"),
+            SearchCategory("Beauty Products", "https://m.media-amazon.com/images/I/51veXCSCAJL._SX679_.jpg"),
+            SearchCategory("Cups & Mugs", "https://nestasia.in/cdn/shop/products/DIN03-VERAPINK-BN820CN_4.jpg?v=1657889646&width=600")
         )
 
-        // FIXED: Handle Save For Later state changes - use local variables
+
         LaunchedEffect(saveForLaterState) {
             val currentState = saveForLaterState
             when (currentState) {
@@ -110,7 +107,7 @@ fun SearchScreen(
             }
         }
 
-        // FIXED: Handle Add to Watchlist state changes - use local variables
+
         LaunchedEffect(addToWatchlistState) {
             val currentState = addToWatchlistState
             when (currentState) {
@@ -141,7 +138,7 @@ fun SearchScreen(
             }
         }
 
-        // FIXED: Handle Remove from Watchlist state changes - use local variables
+
         LaunchedEffect(removeFromWatchlistState) {
             val currentState = removeFromWatchlistState
             when (currentState) {
@@ -291,12 +288,3 @@ fun SearchScreen(
 
 
 
-
-@RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
-@Preview(showBackground = true)
-@Composable
-fun SearchScreenPreview() {
-    DealSpyTheme {
-        SearchScreen(navController = rememberNavController())
-    }
-}

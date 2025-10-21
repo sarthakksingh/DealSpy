@@ -1,6 +1,6 @@
 package com.example.dealspy.view.screens
 
-import android.view.animation.OvershootInterpolator
+
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
