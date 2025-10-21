@@ -255,12 +255,12 @@ fun ProfileScreen(
                             Spacer(Modifier.height(12.dp))
 
                             val options = listOf(
-                                ThemeSelection.Theme1 to "Theme 1",
-                                ThemeSelection.Theme2 to "Theme 2",
-                                ThemeSelection.Theme3 to "Theme 3",
-                                ThemeSelection.Theme4 to "Theme 4",
-                                ThemeSelection.Theme5 to "Theme 5",
-                                ThemeSelection.Theme6 to "Theme 6"
+                                ThemeSelection.Theme1 to "Stellar Navy",
+                                ThemeSelection.Theme2 to "Urban Ember",
+                                ThemeSelection.Theme3 to "Aqua Zenith",
+                                ThemeSelection.Theme4 to "Obsidian Whisper",
+                                ThemeSelection.Theme5 to "Veridian Depth",
+                                ThemeSelection.Theme6 to "Neon Dusk"
                             )
 
                             options.forEach { (value, label) ->
