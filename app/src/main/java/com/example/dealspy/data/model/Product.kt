@@ -7,10 +7,10 @@ data class Product(
     val name: String,
 
     @SerializedName("platform")
-    val platformName: String,
+    val platformName: String?=null,
 
     @SerializedName("price")
-    val priceRaw: String,
+    val priceRaw: String?=null,
 
     @SerializedName("deepLink")
     val deepLink: String,
@@ -25,7 +25,7 @@ data class Product(
     val lastKnownPrice: Int = 0
 ) {
     val price: Int
-        get() = priceRaw.replace("₹", "").replace(",", "").toIntOrNull() ?: 0
+        get() = priceRaw?.replace("₹", "")?.replace(",", "")?.toIntOrNull() ?: 0
 
 }
 

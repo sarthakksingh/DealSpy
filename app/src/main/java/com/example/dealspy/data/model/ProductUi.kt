@@ -2,7 +2,7 @@ package com.example.dealspy.data.model
 
 data class UiProduct(
     val product: Product,
-    val brand: String,
+    val brand: String?=null,
     val timeLeftMillis: Long
 ) {
     val discountPercent: Int

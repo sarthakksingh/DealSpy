@@ -88,7 +88,7 @@ fun SearchResultCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(product.name, style = MaterialTheme.typography.titleMedium)
-                Text(product.platformName, style = MaterialTheme.typography.labelSmall)
+                product.platformName?.let { Text(it, style = MaterialTheme.typography.labelSmall) }
 
                 Spacer(modifier = Modifier.height(4.dp))
 
