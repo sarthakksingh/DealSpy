@@ -80,13 +80,15 @@ fun ProductCard(
                 Spacer(modifier = Modifier.height(8.dp))
 
 
-                Text(
-                    text = uiProduct.brand,
-                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                uiProduct.brand?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
 
                 Text(

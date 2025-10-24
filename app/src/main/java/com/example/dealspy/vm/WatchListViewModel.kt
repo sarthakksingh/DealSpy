@@ -49,8 +49,6 @@ class WatchListViewModel @Inject constructor(
                     val uiProducts = response.data.map { watchlistItem ->
                         val product = Product(
                             name = watchlistItem.productName,
-                            platformName = extractPlatformFromDesc(watchlistItem.desc),
-                            priceRaw = extractPriceFromDesc(watchlistItem.desc),
                             deepLink = "", // Extract from desc if available
                             imageURL = watchlistItem.imageUrl,
                             discount = null,
@@ -60,7 +58,6 @@ class WatchListViewModel @Inject constructor(
                         // Convert to UiProduct with time left calculation
                         UiProduct(
                             product = product,
-                            brand = extractPlatformFromDesc(watchlistItem.desc),
                             timeLeftMillis = calculateTimeLeft(watchlistItem.watchEndDateParsed)
                         )
                     }
@@ -92,12 +89,10 @@ class WatchListViewModel @Inject constructor(
                 _addToWatchlistState.value = UiState.Loading
                 Log.d("WatchListViewModel", "Adding to watchlist: ${product.name}")
 
-                // 🔹 CONVERT Product → WatchlistDTO
                 val watchlistItem = WatchList(
                     productName = product.name,
                     watchEndDate = null,
-                    imageUrl = product.imageURL,
-                    desc = createDescFromProduct(product)
+                    imageUrl = product.imageURL
                 )
 
                 val response = watchlistRepository.addToWatchlist(watchlistItem)
