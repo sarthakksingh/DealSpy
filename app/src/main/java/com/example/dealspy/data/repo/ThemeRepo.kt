@@ -35,7 +35,7 @@ class ThemeRepository(private val context: Context) {
             "Theme16" -> DealSpyTheme.Theme16
             "Theme17" -> DealSpyTheme.Theme17
             "Theme18" -> DealSpyTheme.Theme18
-            else -> DealSpyTheme.Theme2 //default theme
+            else -> DealSpyTheme.Theme17 //default theme
         }
     }
 
