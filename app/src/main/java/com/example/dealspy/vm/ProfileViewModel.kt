@@ -8,6 +8,7 @@ import com.example.dealspy.data.model.SaveForLater
 import com.example.dealspy.data.model.UserDetail
 import com.example.dealspy.data.model.WatchList
 import com.example.dealspy.data.repo.SaveForLaterRepository
+import com.example.dealspy.data.repo.UserRepository
 import com.example.dealspy.data.repo.WatchlistRepository
 import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
@@ -23,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val saveForLaterRepository: SaveForLaterRepository,
-    private val watchlistRepository: WatchlistRepository, // ADD THIS
+    private val watchlistRepository: WatchlistRepository,
+    private val userRepository: UserRepository,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
@@ -43,6 +45,9 @@ class ProfileViewModel @Inject constructor(
     // Add this state flow for watchlist operations
     private val _addToWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val addToWatchlistState = _addToWatchlistState.asStateFlow()
+
+    private val _deleteUserState = MutableStateFlow<UiState<String>>(UiState.Idle)
+    val deleteUserState = _deleteUserState.asStateFlow()
 
 
     init {
@@ -139,6 +144,40 @@ class ProfileViewModel @Inject constructor(
 
     fun resetAddToWatchlistState() {
         _addToWatchlistState.value = UiState.Idle
+    }
+
+    fun deleteUserAccount() {
+        viewModelScope.launch {
+            try {
+                _deleteUserState.value = UiState.Loading
+                Log.d("ProfileViewModel", "Attempting to delete user account")
+
+                val response = userRepository.deleteUser()
+                if (response.success == true) {
+                    Log.d("ProfileViewModel", "Account deleted successfully")
+                    _deleteUserState.value = UiState.Success(
+                        response.message ?: "Account deleted successfully"
+                    )
+                } else {
+                    Log.e("ProfileViewModel", "Delete failed: ${response.message}")
+                    _deleteUserState.value = UiState.Error(
+                        response.message ?: "Failed to delete account"
+                    )
+                }
+            } catch (e: UnknownHostException) {
+                Log.e("ProfileViewModel", "Network error deleting account", e)
+                _deleteUserState.value = UiState.NoInternet
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Error deleting account", e)
+                _deleteUserState.value = UiState.Error(
+                    e.message ?: "Failed to delete account"
+                )
+            }
+        }
+    }
+
+    fun resetDeleteState() {
+        _deleteUserState.value = UiState.Idle
     }
 
 

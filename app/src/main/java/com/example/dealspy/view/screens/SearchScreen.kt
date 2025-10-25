@@ -78,7 +78,7 @@ fun SearchScreen(
 
         val popularCategories = listOf(
             SearchCategory("T-Shirts", "https://image.hm.com/assets/hm/ec/8f/ec8f4c42235bc4d6dece8e0c82da5aa9800e8e36.jpg?imwidth=1260"),
-            SearchCategory("Lipsticks", "https://www.chanel.com/images//t_one//w_0.38,h_0.38,c_crop/q_auto:good,f_autoplus,fl_lossy,dpr_1.1/w_1020/rouge-allure-laque-ultrawear-shine-liquid-lip-colour-87-rouge-irregulier-0-18fl-oz--packshot-default-165087-8840425406494.jpg"),
+            SearchCategory("Lipsticks", "https://images-static.nykaa.com/media/catalog/product/7/b/7b8686c8904245710958_2.jpg?tr=w-344,h-344,cm-pad_resize"),
             SearchCategory("Hair Care", "https://cdn.tirabeauty.com/v2/billowing-snowflake-434234/tira-p/wrkr/products/pictures/item/free/resize-w:1080/1163626/caN5Xm1ey_-1163626_1.jpg"),
             SearchCategory("Backpacks", "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/25885877663942eba56602bea225b65e_9366/adidas_Classic_Yay_Sport_Graphic_Backpack_Beige_JX9075_01_00_standard.jpg"),
             SearchCategory("Shoes", "https://dawntown.co.in/cdn/shop/files/off-white-x-air-jordan-1-retro-high-og-chicago-745075.jpg?v=1749480653&width=1062"),

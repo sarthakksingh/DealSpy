@@ -1,5 +1,6 @@
 package com.example.dealspy.view.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,6 +42,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,6 +62,7 @@ import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.WishlistCard
 import com.example.dealspy.vm.ProfileViewModel
 import com.example.dealspy.vm.ThemeViewModel
+import com.google.firebase.auth.FirebaseAuth
 
 
 //TODO: Have to add , remove save for later
@@ -72,13 +76,49 @@ fun ProfileScreen(
 ) {
     val saveForLaterState by viewModel.saveForLaterState.collectAsState()
     val currentUser by viewModel.currentUser.collectAsState()
+    val context = LocalContext.current
     var notificationsEnabled by remember { mutableStateOf(true) }
     val themeVm: ThemeViewModel = hiltViewModel()
     val currentTheme by themeVm.theme.collectAsState()
     var showThemeSheet by remember { mutableStateOf(false) }
+    val deleteUserState by viewModel.deleteUserState.collectAsState()
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.loadUserProfile()
+    }
+
+    LaunchedEffect(deleteUserState) {
+        when (deleteUserState) {
+            is UiState.Success -> {
+                Toast.makeText(
+                    context,
+                    "Account deleted successfully",
+                    Toast.LENGTH_SHORT
+                ).show()
+                viewModel.resetDeleteState()
+                FirebaseAuth.getInstance().signOut()
+                onLogout()
+            }
+            is UiState.Error -> {
+                val errorState = deleteUserState as UiState.Error
+                Toast.makeText(
+                    context,
+                    "Failed to delete account: ${errorState.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+                viewModel.resetDeleteState()
+            }
+            is UiState.NoInternet -> {
+                Toast.makeText(
+                    context,
+                    "No internet connection",
+                    Toast.LENGTH_SHORT
+                ).show()
+                viewModel.resetDeleteState()
+            }
+            else -> { /* Idle or Loading */ }
+        }
     }
 
 
@@ -242,10 +282,10 @@ fun ProfileScreen(
                         containerColor = MaterialTheme.colorScheme.primary
                     )
                 ) {
-                    Text("Change Theme: ${currentTheme.name}")
+                    Text("Change Theme")
                 }
 
-                // Theme picker as a bottom sheet
+
                 if (showThemeSheet) {
                     ModalBottomSheet(
                         onDismissRequest = { showThemeSheet = false }
@@ -257,26 +297,69 @@ fun ProfileScreen(
                             val options = listOf(
                                 ThemeSelection.Theme1 to "Stellar Navy",
                                 ThemeSelection.Theme2 to "Urban Ember",
-                                ThemeSelection.Theme3 to "Aqua Zenith",
-                                ThemeSelection.Theme4 to "Obsidian Whisper",
+                                ThemeSelection.Theme14 to "Dusk Platinum",
+                                ThemeSelection.Theme15 to "Graphite Noir",
+                                ThemeSelection.Theme16 to "Midnight Serene",
+                                ThemeSelection.Theme17 to "Rich Umber",
+                                ThemeSelection.Theme18 to "Deep Forest Whisper",
                                 ThemeSelection.Theme5 to "Veridian Depth",
-                                ThemeSelection.Theme6 to "Neon Dusk"
+                                ThemeSelection.Theme6 to "Neon Dusk",
+                                ThemeSelection.Theme10 to "Midnight Bloom",//logout button
+                                ThemeSelection.Theme11 to "Charcoal Horizon",
+                                ThemeSelection.Theme12 to "Nightfall Velvet",
+                                ThemeSelection.Theme8 to "Lunar Dust"
+
+                                //ThemeSelection.Theme3 to "Aqua Zenith",
+                                //ThemeSelection.Theme4 to "Obsidian Whisper",
+                                //ThemeSelection.Theme7 to "Slate Grove",
+                                //ThemeSelection.Theme9 to "Smoky Quartz",
+                                //ThemeSelection.Theme13 to "Evergreen Haze",
+
+
                             )
 
                             options.forEach { (value, label) ->
+                                val isSelected = currentTheme == value
+
                                 TextButton(
                                     onClick = {
                                         themeVm.setTheme(value)
                                         showThemeSheet = false
                                     },
                                     modifier = Modifier.fillMaxWidth()
-                                ) { Text(label) }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.Start,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+
+                                        Box(
+                                            modifier = Modifier
+                                                .size(8.dp)
+                                                .background(
+                                                    color = if (isSelected) Color.White else Color.Transparent,
+                                                    shape = CircleShape
+                                                )
+                                        )
+
+                                        Spacer(Modifier.width(12.dp))
+
+                                        Text(
+                                            text = label,
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary
+                                            else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
                             }
 
                             Spacer(Modifier.height(12.dp))
                         }
                     }
                 }
+
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -285,16 +368,26 @@ fun ProfileScreen(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Button(
-                        onClick = { viewModel.onClearSaveForLater() },
+                        onClick = { showDeleteConfirmDialog = true },
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.onSurface
-                        )
+                            containerColor = MaterialTheme.colorScheme.error
+                        ),
+                        enabled = deleteUserState !is UiState.Loading
                     ) {
-                        Text(
-                            text = "App Settings",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        if (deleteUserState is UiState.Loading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = MaterialTheme.colorScheme.onError,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text(
+                                text = "Delete Profile",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+
                     }
 
                     Button(
@@ -311,6 +404,40 @@ fun ProfileScreen(
                     }
                 }
             }
+
+
+            if (showDeleteConfirmDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteConfirmDialog = false },
+                    title = { Text("Delete Account?") },
+                    text = {
+                        Text(
+                            "This will permanently delete your account and all associated data. " +
+                                    "This action cannot be undone.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDeleteConfirmDialog = false
+                                viewModel.deleteUserAccount()
+                            },
+                            colors = ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Delete")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                )
+            }
+
         }
     }
 
