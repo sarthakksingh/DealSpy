@@ -1,4 +1,3 @@
-// Update: data/model/WatchList.kt
 package com.example.dealspy.data.model
 
 import com.google.gson.annotations.SerializedName
@@ -9,13 +8,10 @@ data class WatchList(
     val productName: String,
 
     @SerializedName("watchEndDate")
-    val watchEndDate: String?, // ISO date string from backend
+    val watchEndDate: String?,
 
     @SerializedName("imageUrl")
-    val imageUrl: String?,
-
-    @SerializedName("desc")
-    val desc: String
+    val imageUrl: String?
 ) {
     val watchEndDateParsed: LocalDate?
         get() = try {
