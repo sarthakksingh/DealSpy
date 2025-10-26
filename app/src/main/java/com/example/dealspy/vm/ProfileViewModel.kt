@@ -228,44 +228,12 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun onClearSaveForLater() {
-        viewModelScope.launch {
-            try {
-                val profile = _userProfile.value
-                if (profile != null && profile.saveForLater.isNotEmpty()) {
-                    Log.d("ProfileViewModel", "Clearing all save for later items")
-                    profile.saveForLater.forEach { item ->
-                        saveForLaterRepository.removeFromSaveForLater(item.productName)
-                    }
-                    loadUserProfile()
-                } else {
-                    Log.d("ProfileViewModel", "No items to clear")
-                }
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error clearing save for later", e)
-            }
-        }
-    }
-
     fun getUserDisplayName(): String {
         return _currentUser.value?.displayName ?: "User"
     }
 
     fun getUserPhotoUrl(): String? {
         return _currentUser.value?.photoUrl?.toString()
-    }
-
-    fun getUserEmail(): String? {
-        return _currentUser.value?.email
-    }
-
-    private fun extractPlatformFromDesc(desc: String): String {
-        return desc.substringBefore(" - ").takeIf { it.isNotBlank() } ?: "Unknown"
-    }
-
-    private fun extractPriceFromDesc(desc: String): String {
-        val priceRegex = "₹[\\d,]+".toRegex()
-        return priceRegex.find(desc)?.value ?: "₹0"
     }
 
     private fun extractDeepLinkFromDesc(desc: String): String {
