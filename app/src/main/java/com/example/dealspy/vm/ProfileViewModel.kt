@@ -8,6 +8,7 @@ import com.example.dealspy.data.model.SaveForLater
 import com.example.dealspy.data.model.UserDetail
 import com.example.dealspy.data.model.WatchList
 import com.example.dealspy.data.repo.SaveForLaterRepository
+import com.example.dealspy.data.repo.UserRepository
 import com.example.dealspy.data.repo.WatchlistRepository
 import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
@@ -23,7 +24,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val saveForLaterRepository: SaveForLaterRepository,
-    private val watchlistRepository: WatchlistRepository, // ADD THIS
+    private val watchlistRepository: WatchlistRepository,
+    private val userRepository: UserRepository,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
@@ -43,6 +45,9 @@ class ProfileViewModel @Inject constructor(
     // Add this state flow for watchlist operations
     private val _addToWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val addToWatchlistState = _addToWatchlistState.asStateFlow()
+
+    private val _deleteUserState = MutableStateFlow<UiState<String>>(UiState.Idle)
+    val deleteUserState = _deleteUserState.asStateFlow()
 
 
     init {
@@ -141,6 +146,40 @@ class ProfileViewModel @Inject constructor(
         _addToWatchlistState.value = UiState.Idle
     }
 
+    fun deleteUserAccount() {
+        viewModelScope.launch {
+            try {
+                _deleteUserState.value = UiState.Loading
+                Log.d("ProfileViewModel", "Attempting to delete user account")
+
+                val response = userRepository.deleteUser()
+                if (response.success == true) {
+                    Log.d("ProfileViewModel", "Account deleted successfully")
+                    _deleteUserState.value = UiState.Success(
+                        response.message ?: "Account deleted successfully"
+                    )
+                } else {
+                    Log.e("ProfileViewModel", "Delete failed: ${response.message}")
+                    _deleteUserState.value = UiState.Error(
+                        response.message ?: "Failed to delete account"
+                    )
+                }
+            } catch (e: UnknownHostException) {
+                Log.e("ProfileViewModel", "Network error deleting account", e)
+                _deleteUserState.value = UiState.NoInternet
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Error deleting account", e)
+                _deleteUserState.value = UiState.Error(
+                    e.message ?: "Failed to delete account"
+                )
+            }
+        }
+    }
+
+    fun resetDeleteState() {
+        _deleteUserState.value = UiState.Idle
+    }
+
 
     private fun convertSaveForLaterToProducts(saveForLaterItems: List<SaveForLater>) {
         try {
@@ -189,44 +228,12 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun onClearSaveForLater() {
-        viewModelScope.launch {
-            try {
-                val profile = _userProfile.value
-                if (profile != null && profile.saveForLater.isNotEmpty()) {
-                    Log.d("ProfileViewModel", "Clearing all save for later items")
-                    profile.saveForLater.forEach { item ->
-                        saveForLaterRepository.removeFromSaveForLater(item.productName)
-                    }
-                    loadUserProfile()
-                } else {
-                    Log.d("ProfileViewModel", "No items to clear")
-                }
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error clearing save for later", e)
-            }
-        }
-    }
-
     fun getUserDisplayName(): String {
         return _currentUser.value?.displayName ?: "User"
     }
 
     fun getUserPhotoUrl(): String? {
         return _currentUser.value?.photoUrl?.toString()
-    }
-
-    fun getUserEmail(): String? {
-        return _currentUser.value?.email
-    }
-
-    private fun extractPlatformFromDesc(desc: String): String {
-        return desc.substringBefore(" - ").takeIf { it.isNotBlank() } ?: "Unknown"
-    }
-
-    private fun extractPriceFromDesc(desc: String): String {
-        val priceRegex = "₹[\\d,]+".toRegex()
-        return priceRegex.find(desc)?.value ?: "₹0"
     }
 
     private fun extractDeepLinkFromDesc(desc: String): String {

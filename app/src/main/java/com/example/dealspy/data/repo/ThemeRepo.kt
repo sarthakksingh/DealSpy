@@ -23,7 +23,19 @@ class ThemeRepository(private val context: Context) {
             "Theme4" -> DealSpyTheme.Theme4
             "Theme5" -> DealSpyTheme.Theme5
             "Theme6" -> DealSpyTheme.Theme6
-            else -> DealSpyTheme.Theme2 // default, aligns with current Option2
+            "Theme7" -> DealSpyTheme.Theme7
+            "Theme8" -> DealSpyTheme.Theme8
+            "Theme9" -> DealSpyTheme.Theme9
+            "Theme10" -> DealSpyTheme.Theme10
+            "Theme11" -> DealSpyTheme.Theme11
+            "Theme12" -> DealSpyTheme.Theme12
+            "Theme13" -> DealSpyTheme.Theme13
+            "Theme14" -> DealSpyTheme.Theme14
+            "Theme15" -> DealSpyTheme.Theme15
+            "Theme16" -> DealSpyTheme.Theme16
+            "Theme17" -> DealSpyTheme.Theme17
+            "Theme18" -> DealSpyTheme.Theme18
+            else -> DealSpyTheme.Theme17 //default theme
         }
     }
 
