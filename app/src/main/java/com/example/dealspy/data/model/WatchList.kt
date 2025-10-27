@@ -11,7 +11,9 @@ data class WatchList(
     val watchEndDate: String?,
 
     @SerializedName("imageUrl")
-    val imageUrl: String?
+    val imageUrl: String?,
+    @SerializedName("deepLink")
+    val deepLink:String
 ) {
     val watchEndDateParsed: LocalDate?
         get() = try {

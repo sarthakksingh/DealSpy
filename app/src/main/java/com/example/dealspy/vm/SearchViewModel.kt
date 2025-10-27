@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.SaveForLater
 import com.example.dealspy.data.repo.GeminiService
-import com.example.dealspy.data.repo.SaveForLaterRepository
+import com.example.dealspy.data.repo.SaveForLaterRepo
 import com.example.dealspy.ui.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +22,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val geminiService: GeminiService,
-    private val saveForLaterRepository: SaveForLaterRepository
+    private val saveForLaterRepo: SaveForLaterRepo
 ) : ViewModel() {
 
     private val _searchList = MutableStateFlow<UiState<List<Product>>>(UiState.Loading)
@@ -44,7 +44,7 @@ class SearchViewModel @Inject constructor(
     private fun loadSavedItems() {
         viewModelScope.launch {
             try {
-                val response = saveForLaterRepository.getSaveForLater()
+                val response = saveForLaterRepo.getSaveForLater()
                 if (response.success && response.data != null) {
                     _savedItems.value = response.data.map { it.deepLink }.toSet()
                 } else {
@@ -67,7 +67,7 @@ class SearchViewModel @Inject constructor(
 
                 if (isCurrentlySaved) {
                     // Remove from backend
-                    val response = saveForLaterRepository.removeFromSaveForLater(product.name)
+                    val response = saveForLaterRepo.removeFromSaveForLater(product.name)
                     if (response.success == true) {
                         // Update local state
                         val updatedSet = _savedItems.value.toMutableSet()
@@ -87,7 +87,7 @@ class SearchViewModel @Inject constructor(
                         deepLink = product.deepLink
                     )
 
-                    val response = saveForLaterRepository.addToSaveForLater(saveForLaterItem)
+                    val response = saveForLaterRepo.addToSaveForLater(saveForLaterItem)
                     if (response.success) {
                         // Update local state
                         val updatedSet = _savedItems.value.toMutableSet()

@@ -14,7 +14,7 @@ import com.example.dealspy.ui.theme.ThemeSelection as DealSpyTheme
 private val Context.dataStore by preferencesDataStore(name = "DealSpy_settings")
 private val THEME_KEY = stringPreferencesKey("DealSpy_theme")
 
-class ThemeRepository(private val context: Context) {
+class ThemeRepo(private val context: Context) {
     val themeFlow: Flow<DealSpyTheme> = context.dataStore.data.map { prefs ->
         when (prefs[THEME_KEY]) {
             "Theme1" -> DealSpyTheme.Theme1
