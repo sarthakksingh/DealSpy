@@ -23,4 +23,9 @@ interface WatchlistApi {
         @Path("productName") productName: String,
         @Header("Authorization") accessToken: String
     ): CustomResponse<Unit>
+
+    @DELETE("watchlist/clear")
+    suspend fun clearAllWatchlist(
+        @Header("Authorization") accessToken: String
+    ): CustomResponse<String>
 }

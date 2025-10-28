@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.UiProduct
 import com.example.dealspy.data.model.WatchList
-import com.example.dealspy.data.repo.WatchlistRepository
+import com.example.dealspy.data.repo.WatchListRepo
 import com.example.dealspy.ui.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WatchListViewModel @Inject constructor(
-    private val watchlistRepository: WatchlistRepository
+    private val watchlistRepo: WatchListRepo
 ) : ViewModel() {
 
     private val _watchListState = MutableStateFlow<UiState<List<UiProduct>>>(UiState.Idle)
@@ -31,6 +31,9 @@ class WatchListViewModel @Inject constructor(
     private val _removeFromWatchlistState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
     val removeFromWatchlistState = _removeFromWatchlistState.asStateFlow()
 
+    private val _clearWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
+    val clearWatchlistState = _clearWatchlistState.asStateFlow()
+
     init {
         loadWatchlist()
     }
@@ -41,7 +44,7 @@ class WatchListViewModel @Inject constructor(
                 _watchListState.value = UiState.Loading
                 Log.d("WatchListViewModel", "Loading watchlist...")
 
-                val response = watchlistRepository.getWatchlist()
+                val response = watchlistRepo.getWatchlist()
 
                 if (response.success == true && response.data != null) {
                     Log.d("WatchListViewModel", "Watchlist loaded: ${response.data.size} items")
@@ -68,7 +71,8 @@ class WatchListViewModel @Inject constructor(
                         UiState.Success(uiProducts)
                     }
                 } else {
-                    _watchListState.value = UiState.Error(response.message ?: "Failed to load watchlist")
+                    _watchListState.value =
+                        UiState.Error(response.message ?: "Failed to load watchlist")
                 }
             } catch (e: UnknownHostException) {
                 Log.e("WatchListViewModel", "Network error", e)
@@ -92,17 +96,19 @@ class WatchListViewModel @Inject constructor(
                 val watchlistItem = WatchList(
                     productName = product.name,
                     watchEndDate = null,
-                    imageUrl = product.imageURL
+                    imageUrl = product.imageURL,
+                    deepLink = product.deepLink
                 )
 
-                val response = watchlistRepository.addToWatchlist(watchlistItem)
+                val response = watchlistRepo.addToWatchlist(watchlistItem)
 
                 if (response.success == true) {
                     Log.d("WatchListViewModel", "Added to watchlist successfully")
                     _addToWatchlistState.value = UiState.Success(Unit)
                     loadWatchlist() // Refresh
                 } else {
-                    _addToWatchlistState.value = UiState.Error(response.message ?: "Failed to add to watchlist")
+                    _addToWatchlistState.value =
+                        UiState.Error(response.message ?: "Failed to add to watchlist")
                 }
             } catch (e: Exception) {
                 Log.e("WatchListViewModel", "Error adding to watchlist", e)
@@ -117,24 +123,28 @@ class WatchListViewModel @Inject constructor(
                 _removeFromWatchlistState.value = UiState.Loading
                 Log.d("WatchListViewModel", "Removing from watchlist: $productName")
 
-                val response = watchlistRepository.removeFromWatchlist(productName)
+                val response = watchlistRepo.removeFromWatchlist(productName)
 
                 if (response.success == true) {
                     Log.d("WatchListViewModel", "Removed from watchlist successfully")
                     _removeFromWatchlistState.value = UiState.Success(Unit)
                     loadWatchlist() // Refresh
                 } else {
-                    _removeFromWatchlistState.value = UiState.Error(response.message ?: "Failed to remove from watchlist")
+                    _removeFromWatchlistState.value =
+                        UiState.Error(response.message ?: "Failed to remove from watchlist")
                 }
             } catch (e: Exception) {
                 Log.e("WatchListViewModel", "Error removing from watchlist", e)
-                _removeFromWatchlistState.value = UiState.Error(e.message ?: "Unknown error occurred")
+                _removeFromWatchlistState.value =
+                    UiState.Error(e.message ?: "Unknown error occurred")
             }
         }
     }
+
     private fun calculateTimeLeft(watchEndDate: LocalDate?): Long {
         return if (watchEndDate != null) {
-            val endTime = watchEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            val endTime =
+                watchEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
             val currentTime = System.currentTimeMillis()
             maxOf(0L, endTime - currentTime)
         } else {
@@ -143,24 +153,45 @@ class WatchListViewModel @Inject constructor(
         }
     }
 
-    private fun extractPlatformFromDesc(desc: String): String {
+    fun clearAllWatchlist() {
+        viewModelScope.launch {
+            try {
+                _clearWatchlistState.value = UiState.Loading
+                Log.d("WatchListViewModel", "Clearing all watchlist items...")
 
-        return desc.substringBefore(" - ").takeIf { it.isNotBlank() } ?: "Unknown"
-    }
+                // Use your repository naming pattern
+                val response = watchlistRepo.clearAllWatchlist() // Note: using your repo name
 
-    private fun extractPriceFromDesc(desc: String): String {
+                if (response.success) {
+                    _clearWatchlistState.value = UiState.Success(
+                        response.message ?: "All watchlist items cleared successfully"
+                    )
 
-        val priceRegex = "₹[\\d,]+".toRegex()
-        return priceRegex.find(desc)?.value ?: "₹0"
-    }
+                    loadWatchlist()
 
-    private fun createDescFromProduct(product: Product): String {
+                    Log.d("WatchListViewModel", "Successfully cleared all watchlist items")
+                } else {
+                    _clearWatchlistState.value = UiState.Error(
+                        response.message ?: "Failed to clear watchlist"
+                    )
+                }
 
-        return "${product.platformName} - ${product.priceRaw} - ${product.name}"
+            } catch (e: Exception) {
+                _clearWatchlistState.value = UiState.Error(
+                    "Failed to clear watchlist: ${e.message}"
+                )
+                Log.e("WatchListViewModel", "Exception while clearing watchlist", e)
+            }
+        }
     }
 
     fun resetAddState() {
         _addToWatchlistState.value = UiState.Idle
+    }
+
+
+    fun resetClearWatchlistState() {
+        _clearWatchlistState.value = UiState.Idle
     }
 
     fun resetRemoveState() {

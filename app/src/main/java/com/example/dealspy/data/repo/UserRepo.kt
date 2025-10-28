@@ -8,7 +8,7 @@ import com.example.dealspy.data.remote.UserApi
 import com.google.firebase.auth.FirebaseAuth
 import javax.inject.Inject
 
-class UserRepository @Inject constructor(
+class UserRepo @Inject constructor(
     private val userApi: UserApi,
     private val auth: FirebaseAuth
 ) {
