@@ -11,7 +11,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SaveForLaterRepository @Inject constructor(
+class SaveForLaterRepo @Inject constructor(
     private val saveForLaterApi: SaveForLaterApi,
     private val auth: FirebaseAuth
 ) {
@@ -26,10 +26,10 @@ class SaveForLaterRepository @Inject constructor(
     suspend fun getUserProfile(): CustomResponse<UserDetail> {
         return try {
             val token = getAuthToken()
-            Log.d("SaveForLaterRepository", "Fetching user profile...")
+            Log.d("SaveForLaterRepo", "Fetching user profile...")
             saveForLaterApi.getProfile(token)
         } catch (e: Exception) {
-            Log.e("SaveForLaterRepository", "Failed to get user profile", e)
+            Log.e("SaveForLaterRepo", "Failed to get user profile", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to fetch user profile",
@@ -42,10 +42,10 @@ class SaveForLaterRepository @Inject constructor(
     suspend fun getSaveForLater(): CustomResponse<List<SaveForLater>> {
         return try {
             val token = getAuthToken()
-            Log.d("SaveForLaterRepository", "Fetching save for later items...")
+            Log.d("SaveForLaterRepo", "Fetching save for later items...")
             saveForLaterApi.getSaveForLater(token)
         } catch (e: Exception) {
-            Log.e("SaveForLaterRepository", "Failed to get save for later", e)
+            Log.e("SaveForLaterRepo", "Failed to get save for later", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to fetch save for later",
@@ -57,10 +57,10 @@ class SaveForLaterRepository @Inject constructor(
     suspend fun addToSaveForLater(saveForLaterItem: SaveForLater): CustomResponse<Unit> {
         return try {
             val token = getAuthToken()
-            Log.d("SaveForLaterRepository", "Adding to save for later: ${saveForLaterItem.productName}")
+            Log.d("SaveForLaterRepo", "Adding to save for later: ${saveForLaterItem.productName}")
             saveForLaterApi.postSaveForLater(saveForLaterItem, token)
         } catch (e: Exception) {
-            Log.e("SaveForLaterRepository", "Failed to add to save for later", e)
+            Log.e("SaveForLaterRepo", "Failed to add to save for later", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to add to save for later",null
@@ -71,10 +71,10 @@ class SaveForLaterRepository @Inject constructor(
     suspend fun removeFromSaveForLater(productName: String): CustomResponse<Unit> {
         return try {
             val token = getAuthToken()
-            Log.d("SaveForLaterRepository", "Removing from save for later: $productName")
+            Log.d("SaveForLaterRepo", "Removing from save for later: $productName")
             saveForLaterApi.deleteSaveForLaterItem(productName, token)
         } catch (e: Exception) {
-            Log.e("SaveForLaterRepository", "Failed to remove from save for later", e)
+            Log.e("SaveForLaterRepo", "Failed to remove from save for later", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to remove from save for later",null

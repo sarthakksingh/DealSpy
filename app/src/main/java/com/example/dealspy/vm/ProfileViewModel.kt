@@ -7,9 +7,9 @@ import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.SaveForLater
 import com.example.dealspy.data.model.UserDetail
 import com.example.dealspy.data.model.WatchList
-import com.example.dealspy.data.repo.SaveForLaterRepository
-import com.example.dealspy.data.repo.UserRepository
-import com.example.dealspy.data.repo.WatchlistRepository
+import com.example.dealspy.data.repo.SaveForLaterRepo
+import com.example.dealspy.data.repo.UserRepo
+import com.example.dealspy.data.repo.WatchListRepo
 import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -23,9 +23,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val saveForLaterRepository: SaveForLaterRepository,
-    private val watchlistRepository: WatchlistRepository,
-    private val userRepository: UserRepository,
+    private val saveForLaterRepo: SaveForLaterRepo,
+    private val watchlistRepo: WatchListRepo,
+    private val userRepo: UserRepo,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
@@ -68,7 +68,7 @@ class ProfileViewModel @Inject constructor(
                 _saveForLaterState.value = UiState.Loading
                 Log.d("ProfileViewModel", "Loading user profile...")
 
-                val response = saveForLaterRepository.getUserProfile()
+                val response = saveForLaterRepo.getUserProfile()
 
                 if (response.success && response.data != null) {
                     Log.d("ProfileViewModel", "Profile loaded successfully")
@@ -123,10 +123,11 @@ class ProfileViewModel @Inject constructor(
                 val watchlistItem = WatchList(
                     productName = product.name,
                     watchEndDate = null,
-                    imageUrl = product.imageURL
+                    imageUrl = product.imageURL,
+                    deepLink = product.deepLink
                 )
 
-                watchlistRepository.addToWatchlist(watchlistItem)
+                watchlistRepo.addToWatchlist(watchlistItem)
                 _addToWatchlistState.value = UiState.Success("Added to watchlist!")
 
             } catch (e: UnknownHostException) {
@@ -152,7 +153,7 @@ class ProfileViewModel @Inject constructor(
                 _deleteUserState.value = UiState.Loading
                 Log.d("ProfileViewModel", "Attempting to delete user account")
 
-                val response = userRepository.deleteUser()
+                val response = userRepo.deleteUser()
                 if (response.success == true) {
                     Log.d("ProfileViewModel", "Account deleted successfully")
                     _deleteUserState.value = UiState.Success(
@@ -214,7 +215,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 Log.d("ProfileViewModel", "Removing ${product.name} from save for later")
-                val response = saveForLaterRepository.removeFromSaveForLater(product.name)
+                val response = saveForLaterRepo.removeFromSaveForLater(product.name)
 
                 if (response.success) {
                     Log.d("ProfileViewModel", "Successfully removed ${product.name}")
