@@ -1,7 +1,7 @@
 package com.example.dealspy.data.remote
 
 import com.example.dealspy.data.model.CustomResponse
-import com.example.dealspy.data.model.SaveForLater
+import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.UserDetail
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -20,18 +20,17 @@ interface SaveForLaterApi {
     @GET("saveforlater")
     suspend fun getSaveForLater(
         @Header("Authorization") accessToken: String
-    ): CustomResponse<List<SaveForLater>>
+    ): CustomResponse<List<Product>>
 
     @POST("saveforlater")
     suspend fun postSaveForLater(
-        @Body product: SaveForLater,
+        @Body product: Product,
         @Header("Authorization") accessToken: String
-    ): CustomResponse<Unit>
+    ): CustomResponse<Product>
 
     @DELETE("saveforlater/{productName}")
     suspend fun deleteSaveForLaterItem(
         @Path("productName") productName: String,
         @Header("Authorization") accessToken: String
     ): CustomResponse<Unit>
-
 }

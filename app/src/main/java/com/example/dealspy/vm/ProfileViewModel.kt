@@ -38,33 +38,17 @@ class ProfileViewModel @Inject constructor(
             try {
                 _wishlist.value = UiState.Loading
                 Log.d("ProfileViewModel", "Loading wishlist (save for later)...")
-
                 val response = saveForLaterRepository.getSaveForLater()
-
-                if (response.success && response.data != null) {
+                if (response.success == true && response.data != null) {
                     Log.d("ProfileViewModel", "Wishlist loaded: ${response.data.size} items")
-
-                    // Convert SaveForLater to Product
-                    val products = response.data.map { saveForLaterItem ->
-                        Product(
-                            id = null,
-                            name = saveForLaterItem.productName,
-                            platformName = "Saved",
-                            price = "₹0",
-                            deepLink = saveForLaterItem.deepLink,
-                            imageUrl = saveForLaterItem.imageURL
-                        )
-                    }
-
-                    _wishlist.value = if (products.isEmpty()) {
+                    _wishlist.value = if (response.data.isEmpty()) {
                         UiState.NoData
                     } else {
-                        UiState.Success(products)
+                        UiState.Success(response.data)
                     }
                 } else {
                     _wishlist.value = UiState.Error(response.message ?: "Failed to fetch wishlist")
                 }
-
             } catch (e: UnknownHostException) {
                 Log.e("ProfileViewModel", "Network error", e)
                 _wishlist.value = UiState.NoInternet
@@ -83,14 +67,12 @@ class ProfileViewModel @Inject constructor(
             try {
                 Log.d("ProfileViewModel", "Removing from wishlist: $productName")
                 val response = saveForLaterRepository.removeFromSaveForLater(productName)
-
-                if (response.success) {
+                if (response.success == true) {
                     Log.d("ProfileViewModel", "Successfully removed from wishlist")
-                    getWishlistProducts() // Refresh
+                    getWishlistProducts()
                 } else {
                     Log.e("ProfileViewModel", "Failed to remove: ${response.message}")
                 }
-
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Error removing from wishlist", e)
             }
@@ -102,17 +84,14 @@ class ProfileViewModel @Inject constructor(
             try {
                 _deleteUserState.value = UiState.Loading
                 Log.d("ProfileViewModel", "Attempting to delete user account")
-
                 val response = userRepository.deleteUser()
-
-                if (response.success) {
+                if (response.success == true) {
                     Log.d("ProfileViewModel", "Account deleted successfully")
                     _deleteUserState.value = UiState.Success(response.message ?: "Account deleted successfully")
                 } else {
                     Log.e("ProfileViewModel", "Delete failed: ${response.message}")
                     _deleteUserState.value = UiState.Error(response.message ?: "Failed to delete account")
                 }
-
             } catch (e: UnknownHostException) {
                 Log.e("ProfileViewModel", "Network error deleting account", e)
                 _deleteUserState.value = UiState.NoInternet
