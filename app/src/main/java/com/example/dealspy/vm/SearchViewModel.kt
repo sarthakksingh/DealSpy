@@ -6,7 +6,6 @@ import androidx.annotation.RequiresExtension
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.model.SaveForLater
 import com.example.dealspy.data.repo.GeminiService
 import com.example.dealspy.data.repo.SaveForLaterRepository
 import com.example.dealspy.ui.state.UiState
@@ -37,15 +36,12 @@ class SearchViewModel @Inject constructor(
             _searchList.value = UiState.Loading
             try {
                 val result = geminiService.generateSearchSuggestions(productName)
-
                 _searchList.value = if (result.isEmpty()) {
                     UiState.NoData
                 } else {
                     UiState.Success(result)
                 }
-
                 Log.d("SearchViewModel", "Search successful: ${result.size} products found")
-
             } catch (e: UnknownHostException) {
                 Log.e("SearchViewModel", "Network error", e)
                 _searchList.value = UiState.NoInternet
@@ -63,23 +59,13 @@ class SearchViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 _saveForLaterState.value = UiState.Loading
-
-
-                val saveForLaterItem = SaveForLater(
-                    productName = product.name,
-                    imageURL = product.imageUrl,
-                    deepLink = product.deepLink
-                )
-
-                val response = saveForLaterRepository.addToSaveForLater(saveForLaterItem)
-
+                val response = saveForLaterRepository.addToSaveForLater(product)
                 if (response.success) {
                     _saveForLaterState.value = UiState.Success("Added to Save for Later")
                     Log.d("SearchViewModel", "Added ${product.name} to save for later")
                 } else {
                     _saveForLaterState.value = UiState.Error(response.message ?: "Failed to save")
                 }
-
             } catch (e: UnknownHostException) {
                 _saveForLaterState.value = UiState.NoInternet
                 Log.e("SearchViewModel", "No internet connection", e)

@@ -1,22 +1,26 @@
-// Update: data/remote/WatchlistApi.kt
 package com.example.dealspy.data.remote
 
 import com.example.dealspy.data.model.CustomResponse
-import com.example.dealspy.data.model.WatchList
-import retrofit2.http.*
+import com.example.dealspy.data.model.Product
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface WatchlistApi {
 
     @GET("watchlist")
     suspend fun getWatchlist(
         @Header("Authorization") accessToken: String
-    ): CustomResponse<List<WatchList>>
+    ): CustomResponse<List<Product>>
 
     @POST("watchlist")
     suspend fun postWatchlist(
-        @Body watchlistItem: WatchList,
+        @Body product: Product,
         @Header("Authorization") accessToken: String
-    ): CustomResponse<Unit>
+    ): CustomResponse<Product>
 
     @DELETE("watchlist/{productName}")
     suspend fun deleteWatchListItem(
@@ -27,5 +31,5 @@ interface WatchlistApi {
     @DELETE("watchlist/clear")
     suspend fun clearAllWatchlist(
         @Header("Authorization") accessToken: String
-    ): CustomResponse<String>
+    ): CustomResponse<Unit>
 }

@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.model.WatchList
 import com.example.dealspy.data.repo.WatchlistRepository
 import com.example.dealspy.ui.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -37,33 +36,17 @@ class WatchListViewModel @Inject constructor(
             try {
                 _watchlist.value = UiState.Loading
                 Log.d("WatchListViewModel", "Loading watchlist...")
-
                 val response = watchlistRepository.getWatchlist()
-
                 if (response.success && response.data != null) {
                     Log.d("WatchListViewModel", "Watchlist loaded: ${response.data.size} items")
-
-                    // Convert WatchList to Product
-                    val products = response.data.map { watchlistItem ->
-                        Product(
-                            id = null,
-                            name = watchlistItem.productName,
-                            platformName = "Unknown",
-                            price = "₹0",
-                            deepLink = "",
-                            imageUrl = watchlistItem.imageUrl
-                        )
-                    }
-
-                    _watchlist.value = if (products.isEmpty()) {
+                    _watchlist.value = if (response.data.isEmpty()) {
                         UiState.NoData
                     } else {
-                        UiState.Success(products)
+                        UiState.Success(response.data)
                     }
                 } else {
                     _watchlist.value = UiState.Error(response.message ?: "Failed to load watchlist")
                 }
-
             } catch (e: UnknownHostException) {
                 Log.e("WatchListViewModel", "Network error", e)
                 _watchlist.value = UiState.NoInternet
@@ -82,24 +65,14 @@ class WatchListViewModel @Inject constructor(
             try {
                 _addToWatchlistState.value = UiState.Loading
                 Log.d("WatchListViewModel", "Adding to watchlist: ${product.name}")
-
-                // Convert Product to WatchList
-                val watchlistItem = WatchList(
-                    productName = product.name,
-                    watchEndDate = null,
-                    imageUrl = product.imageUrl
-                )
-
-                val response = watchlistRepository.addToWatchlist(watchlistItem)
-
+                val response = watchlistRepository.addToWatchlist(product)
                 if (response.success) {
                     Log.d("WatchListViewModel", "Added to watchlist successfully")
                     _addToWatchlistState.value = UiState.Success("Added to watchlist!")
-                    getWatchlistProducts() // Refresh
+                    getWatchlistProducts()
                 } else {
                     _addToWatchlistState.value = UiState.Error(response.message ?: "Failed to add to watchlist")
                 }
-
             } catch (e: UnknownHostException) {
                 Log.e("WatchListViewModel", "Network error", e)
                 _addToWatchlistState.value = UiState.NoInternet
@@ -110,22 +83,19 @@ class WatchListViewModel @Inject constructor(
         }
     }
 
-    fun removeFromWatchlist(productId: String) {
+    fun removeFromWatchlist(productName: String) {
         viewModelScope.launch {
             try {
                 _removeFromWatchlistState.value = UiState.Loading
-                Log.d("WatchListViewModel", "Removing from watchlist: $productId")
-
-                val response = watchlistRepository.removeFromWatchlist(productId)
-
+                Log.d("WatchListViewModel", "Removing from watchlist: $productName")
+                val response = watchlistRepository.removeFromWatchlist(productName)
                 if (response.success) {
                     Log.d("WatchListViewModel", "Removed from watchlist successfully")
                     _removeFromWatchlistState.value = UiState.Success("Removed from watchlist")
-                    getWatchlistProducts() // Refresh
+                    getWatchlistProducts()
                 } else {
                     _removeFromWatchlistState.value = UiState.Error(response.message ?: "Failed to remove from watchlist")
                 }
-
             } catch (e: UnknownHostException) {
                 Log.e("WatchListViewModel", "Network error", e)
                 _removeFromWatchlistState.value = UiState.NoInternet
