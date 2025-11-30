@@ -32,13 +32,16 @@ import com.example.dealspy.data.model.Product
 @Composable
 fun BestDealCard(product: Product) {
     val context = LocalContext.current
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(180.dp)
             .padding(bottom = 16.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
+        ),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
@@ -47,7 +50,7 @@ fun BestDealCard(product: Product) {
                 .padding(12.dp)
         ) {
             AsyncImage(
-                model = product.imageURL,
+                model = product.imageUrl,
                 contentDescription = "Product Image",
                 modifier = Modifier
                     .size(130.dp)
@@ -67,37 +70,53 @@ fun BestDealCard(product: Product) {
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
+
                 Text(
                     text = product.name,
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
                 )
+
                 Row {
                     Text(
                         "Price: ",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+
                     Text(
-                        "₹${product.price}",
+                        product.price,
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.tertiary,
                         fontWeight = FontWeight.Bold
                     )
                 }
+
                 Text(
                     text = "Sold by: ${product.platformName}",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.outline
                 )
 
+                // Show discount if available
+                product.getDiscountPercentage()?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
                 Button(
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, product.deepLink.toUri())
-
-                        context.startActivity(intent)
+                        try {
+                            val intent = Intent(Intent.ACTION_VIEW, product.deepLink.toUri())
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            // Handle error
+                        }
                     },
                     modifier = Modifier.padding(top = 8.dp)
                 ) {

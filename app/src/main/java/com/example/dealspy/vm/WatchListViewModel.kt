@@ -4,112 +4,105 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.model.UiProduct
 import com.example.dealspy.data.model.WatchList
-import com.example.dealspy.data.repo.WatchListRepo
+import com.example.dealspy.data.repo.WatchlistRepository
 import com.example.dealspy.ui.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.net.UnknownHostException
-import java.time.LocalDate
-import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
 class WatchListViewModel @Inject constructor(
-    private val watchlistRepo: WatchListRepo
+    private val watchlistRepository: WatchlistRepository
 ) : ViewModel() {
 
-    private val _watchListState = MutableStateFlow<UiState<List<UiProduct>>>(UiState.Idle)
-    val watchListState = _watchListState.asStateFlow()
+    private val _watchlist = MutableStateFlow<UiState<List<Product>>>(UiState.Idle)
+    val watchlist = _watchlist.asStateFlow()
 
-    private val _addToWatchlistState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    private val _addToWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val addToWatchlistState = _addToWatchlistState.asStateFlow()
 
-    private val _removeFromWatchlistState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    private val _removeFromWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val removeFromWatchlistState = _removeFromWatchlistState.asStateFlow()
 
-    private val _clearWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
-    val clearWatchlistState = _clearWatchlistState.asStateFlow()
-
     init {
-        loadWatchlist()
+        getWatchlistProducts()
     }
 
-    fun loadWatchlist() {
+    fun getWatchlistProducts() {
         viewModelScope.launch {
             try {
-                _watchListState.value = UiState.Loading
+                _watchlist.value = UiState.Loading
                 Log.d("WatchListViewModel", "Loading watchlist...")
 
-                val response = watchlistRepo.getWatchlist()
+                val response = watchlistRepository.getWatchlist()
 
-                if (response.success == true && response.data != null) {
+                if (response.success && response.data != null) {
                     Log.d("WatchListViewModel", "Watchlist loaded: ${response.data.size} items")
 
-                    val uiProducts = response.data.map { watchlistItem ->
-                        val product = Product(
+                    // Convert WatchList to Product
+                    val products = response.data.map { watchlistItem ->
+                        Product(
+                            id = null,
                             name = watchlistItem.productName,
-                            deepLink = "", // Extract from desc if available
-                            imageURL = watchlistItem.imageUrl,
-                            discount = null,
-                            lastKnownPrice = 0
-                        )
-
-                        // Convert to UiProduct with time left calculation
-                        UiProduct(
-                            product = product,
-                            timeLeftMillis = calculateTimeLeft(watchlistItem.watchEndDateParsed)
+                            platformName = "Unknown",
+                            price = "₹0",
+                            deepLink = "",
+                            imageUrl = watchlistItem.imageUrl
                         )
                     }
 
-                    _watchListState.value = if (uiProducts.isEmpty()) {
+                    _watchlist.value = if (products.isEmpty()) {
                         UiState.NoData
                     } else {
-                        UiState.Success(uiProducts)
+                        UiState.Success(products)
                     }
                 } else {
-                    _watchListState.value =
-                        UiState.Error(response.message ?: "Failed to load watchlist")
+                    _watchlist.value = UiState.Error(response.message ?: "Failed to load watchlist")
                 }
+
             } catch (e: UnknownHostException) {
                 Log.e("WatchListViewModel", "Network error", e)
-                _watchListState.value = UiState.NoInternet
+                _watchlist.value = UiState.NoInternet
             } catch (e: retrofit2.HttpException) {
                 Log.e("WatchListViewModel", "Server error", e)
-                _watchListState.value = UiState.ServerError
+                _watchlist.value = UiState.ServerError
             } catch (e: Exception) {
                 Log.e("WatchListViewModel", "Error loading watchlist", e)
-                _watchListState.value = UiState.Error(e.message ?: "Something went wrong")
+                _watchlist.value = UiState.Error(e.message ?: "Something went wrong")
             }
         }
     }
 
-    fun addToWatchlist(product: Product, watchEndDate: LocalDate? = null) {
+    fun addToWatchlist(product: Product) {
         viewModelScope.launch {
             try {
                 _addToWatchlistState.value = UiState.Loading
                 Log.d("WatchListViewModel", "Adding to watchlist: ${product.name}")
 
+                // Convert Product to WatchList
                 val watchlistItem = WatchList(
                     productName = product.name,
                     watchEndDate = null,
-                    imageUrl = product.imageURL,
-                    deepLink = product.deepLink
+                    imageUrl = product.imageUrl
                 )
 
-                val response = watchlistRepo.addToWatchlist(watchlistItem)
+                val response = watchlistRepository.addToWatchlist(watchlistItem)
 
-                if (response.success == true) {
+                if (response.success) {
                     Log.d("WatchListViewModel", "Added to watchlist successfully")
-                    _addToWatchlistState.value = UiState.Success(Unit)
-                    loadWatchlist() // Refresh
+                    _addToWatchlistState.value = UiState.Success("Added to watchlist!")
+                    getWatchlistProducts() // Refresh
                 } else {
-                    _addToWatchlistState.value =
-                        UiState.Error(response.message ?: "Failed to add to watchlist")
+                    _addToWatchlistState.value = UiState.Error(response.message ?: "Failed to add to watchlist")
                 }
+
+            } catch (e: UnknownHostException) {
+                Log.e("WatchListViewModel", "Network error", e)
+                _addToWatchlistState.value = UiState.NoInternet
             } catch (e: Exception) {
                 Log.e("WatchListViewModel", "Error adding to watchlist", e)
                 _addToWatchlistState.value = UiState.Error(e.message ?: "Unknown error occurred")
@@ -117,70 +110,28 @@ class WatchListViewModel @Inject constructor(
         }
     }
 
-    fun removeFromWatchlist(productName: String) {
+    fun removeFromWatchlist(productId: String) {
         viewModelScope.launch {
             try {
                 _removeFromWatchlistState.value = UiState.Loading
-                Log.d("WatchListViewModel", "Removing from watchlist: $productName")
+                Log.d("WatchListViewModel", "Removing from watchlist: $productId")
 
-                val response = watchlistRepo.removeFromWatchlist(productName)
-
-                if (response.success == true) {
-                    Log.d("WatchListViewModel", "Removed from watchlist successfully")
-                    _removeFromWatchlistState.value = UiState.Success(Unit)
-                    loadWatchlist() // Refresh
-                } else {
-                    _removeFromWatchlistState.value =
-                        UiState.Error(response.message ?: "Failed to remove from watchlist")
-                }
-            } catch (e: Exception) {
-                Log.e("WatchListViewModel", "Error removing from watchlist", e)
-                _removeFromWatchlistState.value =
-                    UiState.Error(e.message ?: "Unknown error occurred")
-            }
-        }
-    }
-
-    private fun calculateTimeLeft(watchEndDate: LocalDate?): Long {
-        return if (watchEndDate != null) {
-            val endTime =
-                watchEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            val currentTime = System.currentTimeMillis()
-            maxOf(0L, endTime - currentTime)
-        } else {
-
-            30 * 24 * 60 * 60 * 1000L
-        }
-    }
-
-    fun clearAllWatchlist() {
-        viewModelScope.launch {
-            try {
-                _clearWatchlistState.value = UiState.Loading
-                Log.d("WatchListViewModel", "Clearing all watchlist items...")
-
-                // Use your repository naming pattern
-                val response = watchlistRepo.clearAllWatchlist() // Note: using your repo name
+                val response = watchlistRepository.removeFromWatchlist(productId)
 
                 if (response.success) {
-                    _clearWatchlistState.value = UiState.Success(
-                        response.message ?: "All watchlist items cleared successfully"
-                    )
-
-                    loadWatchlist()
-
-                    Log.d("WatchListViewModel", "Successfully cleared all watchlist items")
+                    Log.d("WatchListViewModel", "Removed from watchlist successfully")
+                    _removeFromWatchlistState.value = UiState.Success("Removed from watchlist")
+                    getWatchlistProducts() // Refresh
                 } else {
-                    _clearWatchlistState.value = UiState.Error(
-                        response.message ?: "Failed to clear watchlist"
-                    )
+                    _removeFromWatchlistState.value = UiState.Error(response.message ?: "Failed to remove from watchlist")
                 }
 
+            } catch (e: UnknownHostException) {
+                Log.e("WatchListViewModel", "Network error", e)
+                _removeFromWatchlistState.value = UiState.NoInternet
             } catch (e: Exception) {
-                _clearWatchlistState.value = UiState.Error(
-                    "Failed to clear watchlist: ${e.message}"
-                )
-                Log.e("WatchListViewModel", "Exception while clearing watchlist", e)
+                Log.e("WatchListViewModel", "Error removing from watchlist", e)
+                _removeFromWatchlistState.value = UiState.Error(e.message ?: "Unknown error occurred")
             }
         }
     }
@@ -189,16 +140,11 @@ class WatchListViewModel @Inject constructor(
         _addToWatchlistState.value = UiState.Idle
     }
 
-
-    fun resetClearWatchlistState() {
-        _clearWatchlistState.value = UiState.Idle
-    }
-
     fun resetRemoveState() {
         _removeFromWatchlistState.value = UiState.Idle
     }
 
     fun refresh() {
-        loadWatchlist()
+        getWatchlistProducts()
     }
 }

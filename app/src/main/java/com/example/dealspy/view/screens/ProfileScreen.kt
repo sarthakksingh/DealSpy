@@ -64,29 +64,23 @@ import com.example.dealspy.vm.ProfileViewModel
 import com.example.dealspy.vm.ThemeViewModel
 import com.google.firebase.auth.FirebaseAuth
 
-
-//TODO: Have to add , remove save for later
 @OptIn(ExperimentalMaterial3Api::class)
-
 @Composable
 fun ProfileScreen(
     navController: NavController,
     onLogout: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val saveForLaterState by viewModel.saveForLaterState.collectAsState()
-    val currentUser by viewModel.currentUser.collectAsState()
+    val wishlistState by viewModel.wishlist.collectAsState()
     val context = LocalContext.current
     var notificationsEnabled by remember { mutableStateOf(true) }
+
     val themeVm: ThemeViewModel = hiltViewModel()
     val currentTheme by themeVm.theme.collectAsState()
     var showThemeSheet by remember { mutableStateOf(false) }
+
     val deleteUserState by viewModel.deleteUserState.collectAsState()
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
-
-    LaunchedEffect(Unit) {
-        viewModel.loadUserProfile()
-    }
 
     LaunchedEffect(deleteUserState) {
         when (deleteUserState) {
@@ -121,290 +115,263 @@ fun ProfileScreen(
         }
     }
 
-
-        Scaffold(
-            topBar = {
-                AppTopBar(
-                    title = "Profile",
-                    navController = navController,
-                    onMoreClick = {}
-                )
-            },
-            bottomBar = {
-                BottomNavBar(
-                    navController = navController,
-                    bottomMenu = BottomNavOptions.bottomNavOptions
-                )
-            }
-        ) { innerPadding ->
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Profile",
+                navController = navController,
+                onMoreClick = {}
+            )
+        },
+        bottomBar = {
+            BottomNavBar(
+                navController = navController,
+                bottomMenu = BottomNavOptions.bottomNavOptions
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            // Profile Section
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState())
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                Column(modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally) {
-                    val photoUrl = viewModel.getUserPhotoUrl()
-                    if (photoUrl != null) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(photoUrl)
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = "Profile Picture",
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(120.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primaryContainer)
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val photoUrl = viewModel.getUserPhotoUrl()
+                if (photoUrl != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(photoUrl)
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = "Profile Picture",
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primaryContainer)
                             .padding(24.dp),
-                            tint = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = viewModel.getUserDisplayName(),
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onBackground
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
 
-                Spacer(modifier = Modifier.height(54.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = viewModel.getUserDisplayName(),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
 
-                Text("Saved for Later", style = MaterialTheme.typography.titleSmall)
-                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = viewModel.getUserEmail() ?: "user@example.com",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
-                when (saveForLaterState) {
-                    is UiState.Loading -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(100.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Wishlist Section
+            Text("Saved Items", style = MaterialTheme.typography.titleSmall)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            when (wishlistState) {
+                is UiState.Loading -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(100.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
                     }
-                    is UiState.Success -> {
-                        val products = (saveForLaterState as UiState.Success<List<Product>>).data
-                        if (products.isEmpty()) {
-                            Text(
-                                text = "No saved items yet",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(16.dp)
-                            )
-                        } else {
-                            LazyRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(
-                                    items = products,
-                                    key = { it.name }
-                                ) { product ->
-                                    WishlistCard(
-                                        product = product,
-                                        onDelete = {
-                                            viewModel.onDeleteFromSaveForLater(product)
-                                        },
-                                        onAddToWatchlist = { productToAdd ->
-                                            viewModel.addToWatchlist(productToAdd)
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    is UiState.Error -> {
-                        Text(
-                            text = "Error loading saved items",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(16.dp)
-                        )
-                    }
-                    is UiState.NoData -> {
+                }
+                is UiState.Success -> {
+                    val products = (wishlistState as UiState.Success<List<Product>>).data
+                    if (products.isEmpty()) {
                         Text(
                             text = "No saved items yet",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(16.dp)
                         )
+                    } else {
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(
+                                items = products,
+                                key = { it.name }
+                            ) { product ->
+                                WishlistCard(
+                                    product = product,
+                                    onDelete = { viewModel.removeFromWishlist(product.name)},
+                                        onAddToWatchlist = {}
+
+                                )
+                            }
+                        }
                     }
-                    else -> {
-                        Text(
-                            text = "Loading...",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(16.dp)
+                }
+                is UiState.Error -> {
+                    Text(
+                        text = "Error loading saved items",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                is UiState.NoData -> {
+                    Text(
+                        text = "No saved items yet",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                else -> {}
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Notifications
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Enable Notifications", modifier = Modifier.weight(1f))
+                Switch(
+                    checked = notificationsEnabled,
+                    onCheckedChange = { notificationsEnabled = it }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Theme Button
+            Button(
+                onClick = { showThemeSheet = true },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Text("Change Theme")
+            }
+
+            if (showThemeSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = { showThemeSheet = false }
+                ) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text("Select Theme", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(12.dp))
+
+                        val options = listOf(
+                            ThemeSelection.Theme1 to "Stellar Navy",
+                            ThemeSelection.Theme2 to "Urban Ember",
+                            ThemeSelection.Theme14 to "Dusk Platinum"
                         )
-                    }
-                }
 
-
-                Spacer(modifier = Modifier.height(54.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("Enable Notifications", modifier = Modifier.weight(1f))
-                    Switch(
-                        checked = notificationsEnabled,
-                        onCheckedChange = { notificationsEnabled = it }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-                Button(
-                    onClick = { showThemeSheet = true },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text("Change Theme")
-                }
-
-
-                if (showThemeSheet) {
-                    ModalBottomSheet(
-                        onDismissRequest = { showThemeSheet = false }
-                    ) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text("Select Theme", style = MaterialTheme.typography.titleMedium)
-                            Spacer(Modifier.height(12.dp))
-
-                            val options = listOf(
-                                ThemeSelection.Theme1 to "Stellar Navy",
-                                ThemeSelection.Theme2 to "Urban Ember",
-                                ThemeSelection.Theme14 to "Dusk Platinum",
-                                ThemeSelection.Theme15 to "Graphite Noir",
-                                ThemeSelection.Theme16 to "Midnight Serene",
-                                ThemeSelection.Theme17 to "Rich Umber",
-                                ThemeSelection.Theme18 to "Deep Forest Whisper",
-                                ThemeSelection.Theme5 to "Veridian Depth",
-                                ThemeSelection.Theme6 to "Neon Dusk",
-                                ThemeSelection.Theme10 to "Midnight Bloom",//logout button
-                                ThemeSelection.Theme11 to "Charcoal Horizon",
-                                ThemeSelection.Theme12 to "Nightfall Velvet",
-                                ThemeSelection.Theme8 to "Lunar Dust"
-
-                                //ThemeSelection.Theme3 to "Aqua Zenith",
-                                //ThemeSelection.Theme4 to "Obsidian Whisper",
-                                //ThemeSelection.Theme7 to "Slate Grove",
-                                //ThemeSelection.Theme9 to "Smoky Quartz",
-                                //ThemeSelection.Theme13 to "Evergreen Haze",
-
-
-                            )
-
-                            options.forEach { (value, label) ->
-                                val isSelected = currentTheme == value
-
-                                TextButton(
-                                    onClick = {
-                                        themeVm.setTheme(value)
-                                        showThemeSheet = false
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
+                        options.forEach { (value, label) ->
+                            val isSelected = currentTheme == value
+                            TextButton(
+                                onClick = {
+                                    themeVm.setTheme(value)
+                                    showThemeSheet = false
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Start,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.Start,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-
-                                        Box(
-                                            modifier = Modifier
-                                                .size(8.dp)
-                                                .background(
-                                                    color = if (isSelected) Color.White else Color.Transparent,
-                                                    shape = CircleShape
-                                                )
-                                        )
-
-                                        Spacer(Modifier.width(12.dp))
-
-                                        Text(
-                                            text = label,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            color = if (isSelected) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.onSurface
-                                        )
-                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .background(
+                                                color = if (isSelected) Color.White else Color.Transparent,
+                                                shape = CircleShape
+                                            )
+                                    )
+                                    Spacer(Modifier.width(12.dp))
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = if (isSelected) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurface
+                                    )
                                 }
                             }
-
-                            Spacer(Modifier.height(12.dp))
                         }
-                    }
-                }
-
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Button(
-                        onClick = { showDeleteConfirmDialog = true },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        ),
-                        enabled = deleteUserState !is UiState.Loading
-                    ) {
-                        if (deleteUserState is UiState.Loading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                color = MaterialTheme.colorScheme.onError,
-                                strokeWidth = 2.dp
-                            )
-                        } else {
-                            Text(
-                                text = "Delete Profile",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-
-                    }
-
-                    Button(
-                        onClick = { onLogout() },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text(
-                            text = "Log Out",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
+                        Spacer(Modifier.height(12.dp))
                     }
                 }
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Action Buttons
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Button(
+                    onClick = { showDeleteConfirmDialog = true },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    enabled = deleteUserState !is UiState.Loading
+                ) {
+                    if (deleteUserState is UiState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = MaterialTheme.colorScheme.onError,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = "Delete Profile",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+
+                Button(
+                    onClick = { onLogout() },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(
+                        text = "Log Out",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
 
             if (showDeleteConfirmDialog) {
                 AlertDialog(
@@ -437,12 +404,9 @@ fun ProfileScreen(
                     }
                 )
             }
-
         }
     }
-
-
-
+}
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
@@ -454,4 +418,3 @@ fun ProfileScreenPreview() {
         )
     }
 }
-
