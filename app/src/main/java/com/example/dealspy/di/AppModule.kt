@@ -8,9 +8,9 @@ import com.example.dealspy.data.remote.WatchlistApi
 import com.example.dealspy.data.remote.SaveForLaterApi
 import com.example.dealspy.data.remote.UserApi
 import com.example.dealspy.data.repo.GeminiService
-import com.example.dealspy.data.repo.SaveForLaterRepository
-import com.example.dealspy.data.repo.ThemeRepository
-import com.example.dealspy.data.repo.UserRepository
+import com.example.dealspy.data.repo.SaveForLaterRepo
+import com.example.dealspy.data.repo.ThemeRepo
+import com.example.dealspy.data.repo.UserRepo
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -54,8 +54,8 @@ object AppModule {
     fun provideSaveForLaterRepository(
         saveForLaterApi: SaveForLaterApi,
         auth: FirebaseAuth
-    ): SaveForLaterRepository {
-        return SaveForLaterRepository(saveForLaterApi, auth)
+    ): SaveForLaterRepo {
+        return SaveForLaterRepo(saveForLaterApi, auth)
     }
 
     @Provides
@@ -87,14 +87,14 @@ object AppModule {
     fun provideUserRepository(
         userApi: UserApi,
         auth: FirebaseAuth
-    ): UserRepository {
-        return UserRepository(userApi, auth)
+    ): UserRepo {
+        return UserRepo(userApi, auth)
     }
 
     @Provides
     @Singleton
-    fun provideThemeRepository(@ApplicationContext context: Context): ThemeRepository =
-        ThemeRepository(context)
+    fun provideThemeRepository(@ApplicationContext context: Context): ThemeRepo =
+        ThemeRepo(context)
 
 
     @Provides
