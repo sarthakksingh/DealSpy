@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.model.UiProduct
 import com.example.dealspy.data.model.WatchList
 import com.example.dealspy.data.repo.WatchlistRepository
 import com.example.dealspy.ui.state.UiState
@@ -13,8 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.net.UnknownHostException
-import java.time.LocalDate
-import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,88 +19,90 @@ class WatchListViewModel @Inject constructor(
     private val watchlistRepository: WatchlistRepository
 ) : ViewModel() {
 
-    private val _watchListState = MutableStateFlow<UiState<List<UiProduct>>>(UiState.Idle)
-    val watchListState = _watchListState.asStateFlow()
+    private val _watchlist = MutableStateFlow<UiState<List<Product>>>(UiState.Idle)
+    val watchlist = _watchlist.asStateFlow()
 
-    private val _addToWatchlistState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    private val _addToWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val addToWatchlistState = _addToWatchlistState.asStateFlow()
 
-    private val _removeFromWatchlistState = MutableStateFlow<UiState<Unit>>(UiState.Idle)
+    private val _removeFromWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val removeFromWatchlistState = _removeFromWatchlistState.asStateFlow()
 
     init {
-        loadWatchlist()
+        getWatchlistProducts()
     }
 
-    fun loadWatchlist() {
+    fun getWatchlistProducts() {
         viewModelScope.launch {
             try {
-                _watchListState.value = UiState.Loading
+                _watchlist.value = UiState.Loading
                 Log.d("WatchListViewModel", "Loading watchlist...")
 
                 val response = watchlistRepository.getWatchlist()
 
-                if (response.success == true && response.data != null) {
+                if (response.success && response.data != null) {
                     Log.d("WatchListViewModel", "Watchlist loaded: ${response.data.size} items")
 
-                    val uiProducts = response.data.map { watchlistItem ->
-                        val product = Product(
+                    // Convert WatchList to Product
+                    val products = response.data.map { watchlistItem ->
+                        Product(
+                            id = null,
                             name = watchlistItem.productName,
-                            deepLink = "", // Extract from desc if available
-                            imageURL = watchlistItem.imageUrl,
-                            discount = null,
-                            lastKnownPrice = 0
-                        )
-
-                        // Convert to UiProduct with time left calculation
-                        UiProduct(
-                            product = product,
-                            timeLeftMillis = calculateTimeLeft(watchlistItem.watchEndDateParsed)
+                            platformName = "Unknown",
+                            price = "₹0",
+                            deepLink = "",
+                            imageUrl = watchlistItem.imageUrl
                         )
                     }
 
-                    _watchListState.value = if (uiProducts.isEmpty()) {
+                    _watchlist.value = if (products.isEmpty()) {
                         UiState.NoData
                     } else {
-                        UiState.Success(uiProducts)
+                        UiState.Success(products)
                     }
                 } else {
-                    _watchListState.value = UiState.Error(response.message ?: "Failed to load watchlist")
+                    _watchlist.value = UiState.Error(response.message ?: "Failed to load watchlist")
                 }
+
             } catch (e: UnknownHostException) {
                 Log.e("WatchListViewModel", "Network error", e)
-                _watchListState.value = UiState.NoInternet
+                _watchlist.value = UiState.NoInternet
             } catch (e: retrofit2.HttpException) {
                 Log.e("WatchListViewModel", "Server error", e)
-                _watchListState.value = UiState.ServerError
+                _watchlist.value = UiState.ServerError
             } catch (e: Exception) {
                 Log.e("WatchListViewModel", "Error loading watchlist", e)
-                _watchListState.value = UiState.Error(e.message ?: "Something went wrong")
+                _watchlist.value = UiState.Error(e.message ?: "Something went wrong")
             }
         }
     }
 
-    fun addToWatchlist(product: Product, watchEndDate: LocalDate? = null) {
+    fun addToWatchlist(product: Product) {
         viewModelScope.launch {
             try {
                 _addToWatchlistState.value = UiState.Loading
                 Log.d("WatchListViewModel", "Adding to watchlist: ${product.name}")
 
+                // Convert Product to WatchList
                 val watchlistItem = WatchList(
                     productName = product.name,
                     watchEndDate = null,
-                    imageUrl = product.imageURL
+                    imageUrl = product.imageUrl
                 )
 
                 val response = watchlistRepository.addToWatchlist(watchlistItem)
 
-                if (response.success == true) {
+                if (response.success) {
                     Log.d("WatchListViewModel", "Added to watchlist successfully")
-                    _addToWatchlistState.value = UiState.Success(Unit)
-                    loadWatchlist() // Refresh
+                    _addToWatchlistState.value = UiState.Success("Added to watchlist!")
+                    getWatchlistProducts() // Refresh
                 } else {
                     _addToWatchlistState.value = UiState.Error(response.message ?: "Failed to add to watchlist")
                 }
+
+            } catch (e: UnknownHostException) {
+                Log.e("WatchListViewModel", "Network error", e)
+                _addToWatchlistState.value = UiState.NoInternet
             } catch (e: Exception) {
                 Log.e("WatchListViewModel", "Error adding to watchlist", e)
                 _addToWatchlistState.value = UiState.Error(e.message ?: "Unknown error occurred")
@@ -111,52 +110,30 @@ class WatchListViewModel @Inject constructor(
         }
     }
 
-    fun removeFromWatchlist(productName: String) {
+    fun removeFromWatchlist(productId: String) {
         viewModelScope.launch {
             try {
                 _removeFromWatchlistState.value = UiState.Loading
-                Log.d("WatchListViewModel", "Removing from watchlist: $productName")
+                Log.d("WatchListViewModel", "Removing from watchlist: $productId")
 
-                val response = watchlistRepository.removeFromWatchlist(productName)
+                val response = watchlistRepository.removeFromWatchlist(productId)
 
-                if (response.success == true) {
+                if (response.success) {
                     Log.d("WatchListViewModel", "Removed from watchlist successfully")
-                    _removeFromWatchlistState.value = UiState.Success(Unit)
-                    loadWatchlist() // Refresh
+                    _removeFromWatchlistState.value = UiState.Success("Removed from watchlist")
+                    getWatchlistProducts() // Refresh
                 } else {
                     _removeFromWatchlistState.value = UiState.Error(response.message ?: "Failed to remove from watchlist")
                 }
+
+            } catch (e: UnknownHostException) {
+                Log.e("WatchListViewModel", "Network error", e)
+                _removeFromWatchlistState.value = UiState.NoInternet
             } catch (e: Exception) {
                 Log.e("WatchListViewModel", "Error removing from watchlist", e)
                 _removeFromWatchlistState.value = UiState.Error(e.message ?: "Unknown error occurred")
             }
         }
-    }
-    private fun calculateTimeLeft(watchEndDate: LocalDate?): Long {
-        return if (watchEndDate != null) {
-            val endTime = watchEndDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-            val currentTime = System.currentTimeMillis()
-            maxOf(0L, endTime - currentTime)
-        } else {
-
-            30 * 24 * 60 * 60 * 1000L
-        }
-    }
-
-    private fun extractPlatformFromDesc(desc: String): String {
-
-        return desc.substringBefore(" - ").takeIf { it.isNotBlank() } ?: "Unknown"
-    }
-
-    private fun extractPriceFromDesc(desc: String): String {
-
-        val priceRegex = "₹[\\d,]+".toRegex()
-        return priceRegex.find(desc)?.value ?: "₹0"
-    }
-
-    private fun createDescFromProduct(product: Product): String {
-
-        return "${product.platformName} - ${product.priceRaw} - ${product.name}"
     }
 
     fun resetAddState() {
@@ -168,6 +145,6 @@ class WatchListViewModel @Inject constructor(
     }
 
     fun refresh() {
-        loadWatchlist()
+        getWatchlistProducts()
     }
 }

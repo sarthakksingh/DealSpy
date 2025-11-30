@@ -4,15 +4,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.model.SaveForLater
-import com.example.dealspy.data.model.UserDetail
-import com.example.dealspy.data.model.WatchList
 import com.example.dealspy.data.repo.SaveForLaterRepository
 import com.example.dealspy.data.repo.UserRepository
-import com.example.dealspy.data.repo.WatchlistRepository
 import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,126 +19,82 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val saveForLaterRepository: SaveForLaterRepository,
-    private val watchlistRepository: WatchlistRepository,
     private val userRepository: UserRepository,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
-
-    private val _currentUser = MutableStateFlow<FirebaseUser?>(null)
-    val currentUser = _currentUser.asStateFlow()
-
-    private val _userProfile = MutableStateFlow<UserDetail?>(null)
-    val userProfile = _userProfile.asStateFlow()
-
-    private val _profileState = MutableStateFlow<UiState<UserDetail>>(UiState.Idle)
-    val profileState = _profileState.asStateFlow()
-
-    private val _saveForLaterState = MutableStateFlow<UiState<List<SaveForLater>>>(UiState.Loading)
-    val saveForLaterState = _saveForLaterState.asStateFlow()
-
-    // Add this state flow for watchlist operations
-    private val _addToWatchlistState = MutableStateFlow<UiState<String>>(UiState.Idle)
-    val addToWatchlistState = _addToWatchlistState.asStateFlow()
+    private val _wishlist = MutableStateFlow<UiState<List<Product>>>(UiState.Loading)
+    val wishlist = _wishlist.asStateFlow()
 
     private val _deleteUserState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val deleteUserState = _deleteUserState.asStateFlow()
 
-
     init {
-        loadCurrentUser()
-        loadUserProfile()
+        getWishlistProducts()
     }
 
-    private fun loadCurrentUser() {
-        val user = auth.currentUser
-        _currentUser.value = user
-        Log.d("ProfileViewModel", "Current user: ${user?.displayName}, Email: ${user?.email}")
-    }
-
-    fun loadUserProfile() {
+    fun getWishlistProducts() {
         viewModelScope.launch {
             try {
-                _profileState.value = UiState.Loading
-                _saveForLaterState.value = UiState.Loading
-                Log.d("ProfileViewModel", "Loading user profile...")
+                _wishlist.value = UiState.Loading
+                Log.d("ProfileViewModel", "Loading wishlist (save for later)...")
 
-                val response = saveForLaterRepository.getUserProfile()
+                val response = saveForLaterRepository.getSaveForLater()
 
                 if (response.success && response.data != null) {
-                    Log.d("ProfileViewModel", "Profile loaded successfully")
-                    Log.d("ProfileViewModel", "Watchlist items: ${response.data.watchList.size}")
-                    Log.d("ProfileViewModel", "Save for later items: ${response.data.saveForLater.size}")
+                    Log.d("ProfileViewModel", "Wishlist loaded: ${response.data.size} items")
 
-                    _userProfile.value = response.data
-                    _profileState.value = UiState.Success(response.data)
-
-                    convertSaveForLaterToProducts(response.data.saveForLater)
-
-                } else {
-                    Log.e("ProfileViewModel", "Failed to load profile: ${response.message}")
-
-                    if (response.data != null) {
-                        _userProfile.value = response.data
-                        _profileState.value = UiState.Success(response.data)
-                        convertSaveForLaterToProducts(response.data.saveForLater)
-                    } else {
-                        _profileState.value = UiState.Error(response.message ?: "Failed to load profile")
-                        _saveForLaterState.value = UiState.NoData
+                    // Convert SaveForLater to Product
+                    val products = response.data.map { saveForLaterItem ->
+                        Product(
+                            id = null,
+                            name = saveForLaterItem.productName,
+                            platformName = "Saved",
+                            price = "₹0",
+                            deepLink = saveForLaterItem.deepLink,
+                            imageUrl = saveForLaterItem.imageURL
+                        )
                     }
-                }
-            } catch (e: UnknownHostException) {
-                Log.e("ProfileViewModel", "Network error loading profile", e)
-                _profileState.value = UiState.NoInternet
-                _saveForLaterState.value = UiState.NoInternet
-            } catch (e: HttpException) {
-                Log.e("ProfileViewModel", "Server error loading profile", e)
-                _profileState.value = UiState.ServerError
-                _saveForLaterState.value = UiState.ServerError
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error loading profile", e)
 
-                val existingProfile = _userProfile.value
-                if (existingProfile != null) {
-                    convertSaveForLaterToProducts(existingProfile.saveForLater)
+                    _wishlist.value = if (products.isEmpty()) {
+                        UiState.NoData
+                    } else {
+                        UiState.Success(products)
+                    }
                 } else {
-                    _profileState.value = UiState.Error(e.message ?: "Unknown error occurred")
-                    _saveForLaterState.value = UiState.NoData
+                    _wishlist.value = UiState.Error(response.message ?: "Failed to fetch wishlist")
                 }
+
+            } catch (e: UnknownHostException) {
+                Log.e("ProfileViewModel", "Network error", e)
+                _wishlist.value = UiState.NoInternet
+            } catch (e: HttpException) {
+                Log.e("ProfileViewModel", "Server error", e)
+                _wishlist.value = UiState.ServerError
+            } catch (e: Exception) {
+                Log.e("ProfileViewModel", "Error loading wishlist", e)
+                _wishlist.value = UiState.Error(e.message ?: "Unknown error occurred")
             }
         }
     }
 
-    fun addToWatchlist(product: Product) {
+    fun removeFromWishlist(productName: String) {
         viewModelScope.launch {
             try {
-                _addToWatchlistState.value = UiState.Loading
+                Log.d("ProfileViewModel", "Removing from wishlist: $productName")
+                val response = saveForLaterRepository.removeFromSaveForLater(productName)
 
-                Log.d("ProfileViewModel", "Adding ${product.name} to watchlist")
-                val watchlistItem = WatchList(
-                    productName = product.name,
-                    watchEndDate = null,
-                    imageUrl = product.imageURL
-                )
+                if (response.success) {
+                    Log.d("ProfileViewModel", "Successfully removed from wishlist")
+                    getWishlistProducts() // Refresh
+                } else {
+                    Log.e("ProfileViewModel", "Failed to remove: ${response.message}")
+                }
 
-                watchlistRepository.addToWatchlist(watchlistItem)
-                _addToWatchlistState.value = UiState.Success("Added to watchlist!")
-
-            } catch (e: UnknownHostException) {
-                _addToWatchlistState.value = UiState.NoInternet
             } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error adding to watchlist", e)
-                _addToWatchlistState.value = UiState.Error(e.message ?: "Failed to add to watchlist")
+                Log.e("ProfileViewModel", "Error removing from wishlist", e)
             }
         }
-    }
-
-    private fun createDescFromProduct(product: Product): String {
-        return "${product.platformName} - ${product.priceRaw} - ${product.name}"
-    }
-
-    fun resetAddToWatchlistState() {
-        _addToWatchlistState.value = UiState.Idle
     }
 
     fun deleteUserAccount() {
@@ -153,25 +104,21 @@ class ProfileViewModel @Inject constructor(
                 Log.d("ProfileViewModel", "Attempting to delete user account")
 
                 val response = userRepository.deleteUser()
-                if (response.success == true) {
+
+                if (response.success) {
                     Log.d("ProfileViewModel", "Account deleted successfully")
-                    _deleteUserState.value = UiState.Success(
-                        response.message ?: "Account deleted successfully"
-                    )
+                    _deleteUserState.value = UiState.Success(response.message ?: "Account deleted successfully")
                 } else {
                     Log.e("ProfileViewModel", "Delete failed: ${response.message}")
-                    _deleteUserState.value = UiState.Error(
-                        response.message ?: "Failed to delete account"
-                    )
+                    _deleteUserState.value = UiState.Error(response.message ?: "Failed to delete account")
                 }
+
             } catch (e: UnknownHostException) {
                 Log.e("ProfileViewModel", "Network error deleting account", e)
                 _deleteUserState.value = UiState.NoInternet
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Error deleting account", e)
-                _deleteUserState.value = UiState.Error(
-                    e.message ?: "Failed to delete account"
-                )
+                _deleteUserState.value = UiState.Error(e.message ?: "Failed to delete account")
             }
         }
     }
@@ -180,101 +127,19 @@ class ProfileViewModel @Inject constructor(
         _deleteUserState.value = UiState.Idle
     }
 
-
-    private fun convertSaveForLaterToProducts(saveForLaterItems: List<SaveForLater>) {
-        try {
-            if (saveForLaterItems.isEmpty()) {
-                _saveForLaterState.value = UiState.NoData
-                Log.d("ProfileViewModel", "No save for later items found")
-                return
-            }
-
-            val products = saveForLaterItems.map { saveForLaterItem ->
-                SaveForLater(
-                    productName = saveForLaterItem.productName,
-                    imageURL = saveForLaterItem.imageURL,
-                    deepLink = saveForLaterItem.deepLink
-                )
-            }
-
-            _saveForLaterState.value = UiState.Success(products)
-            Log.d("ProfileViewModel", "Converted ${products.size} save for later items to products")
-
-        } catch (e: Exception) {
-            Log.e("ProfileViewModel", "Error converting save for later data", e)
-            _saveForLaterState.value = UiState.NoData
-        }
-    }
-
-    fun loadSaveForLater() {
-        loadUserProfile()
-    }
-
-    fun onDeleteFromSaveForLater(product: Product) {
-        viewModelScope.launch {
-            try {
-                Log.d("ProfileViewModel", "Removing ${product.name} from save for later")
-                val response = saveForLaterRepository.removeFromSaveForLater(product.name)
-
-                if (response.success) {
-                    Log.d("ProfileViewModel", "Successfully removed ${product.name}")
-                    loadUserProfile()
-                } else {
-                    Log.e("ProfileViewModel", "Failed to remove item: ${response.message}")
-                }
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error removing item from save for later", e)
-            }
-        }
-    }
-
-    fun onClearSaveForLater() {
-        viewModelScope.launch {
-            try {
-                val profile = _userProfile.value
-                if (profile != null && profile.saveForLater.isNotEmpty()) {
-                    Log.d("ProfileViewModel", "Clearing all save for later items")
-                    profile.saveForLater.forEach { item ->
-                        saveForLaterRepository.removeFromSaveForLater(item.productName)
-                    }
-                    loadUserProfile()
-                } else {
-                    Log.d("ProfileViewModel", "No items to clear")
-                }
-            } catch (e: Exception) {
-                Log.e("ProfileViewModel", "Error clearing save for later", e)
-            }
-        }
+    fun refresh() {
+        getWishlistProducts()
     }
 
     fun getUserDisplayName(): String {
-        return _currentUser.value?.displayName ?: "User"
+        return auth.currentUser?.displayName ?: "User"
     }
 
     fun getUserPhotoUrl(): String? {
-        return _currentUser.value?.photoUrl?.toString()
+        return auth.currentUser?.photoUrl?.toString()
     }
 
     fun getUserEmail(): String? {
-        return _currentUser.value?.email
-    }
-
-    private fun extractPlatformFromDesc(desc: String): String {
-        return desc.substringBefore(" - ").takeIf { it.isNotBlank() } ?: "Unknown"
-    }
-
-    private fun extractPriceFromDesc(desc: String): String {
-        val priceRegex = "₹[\\d,]+".toRegex()
-        return priceRegex.find(desc)?.value ?: "₹0"
-    }
-
-    private fun extractDeepLinkFromDesc(desc: String): String {
-        val urlRegex = "https?://[^\\s]+".toRegex()
-        return urlRegex.find(desc)?.value ?: ""
-    }
-
-    fun refresh() {
-        loadCurrentUser()
-        loadUserProfile()
+        return auth.currentUser?.email
     }
 }
