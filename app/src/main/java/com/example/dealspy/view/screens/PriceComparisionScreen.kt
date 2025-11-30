@@ -1,5 +1,7 @@
 package com.example.dealspy.view.screens
 
+import android.os.Build
+import androidx.annotation.RequiresExtension
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +33,7 @@ import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.PriceComparisonCard
 import com.example.dealspy.vm.PriceComparisonViewModel
 
+@RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @Composable
 fun PriceCompareScreen(
     productName: String,
@@ -39,91 +42,83 @@ fun PriceCompareScreen(
 ) {
     val priceComparisonState by viewModel.priceComparisonState.collectAsState()
 
-
     LaunchedEffect(productName) {
         viewModel.loadPriceComparison(productName)
     }
 
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Price Comparison",
+                navController = navController,
+                onMoreClick = {
+                    // Handle more menu - could add sort options, filters, etc.
+                }
+            )
+        },
+        bottomBar = {
+            BottomNavBar(
+                navController = navController,
+                bottomMenu = BottomNavOptions.bottomNavOptions
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = productName,
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-        Scaffold(
-            topBar = {
-                AppTopBar(
-                    title = "Price Comparison",
-                    navController = navController,
-                    onMoreClick = {
-                        // Handle more menu - could add sort options, filters, etc.
-                    }
-                )
-            },
-            bottomBar = {
-                BottomNavBar(
-                    navController = navController,
-                    bottomMenu = BottomNavOptions.bottomNavOptions
-                )
-            }
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-
-            ) {
-
-                Text(
-                    text = productName,
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-
-
-
-                UiStateHandler(
-                    state = priceComparisonState,
-                    modifier = Modifier.fillMaxSize(),
-                    onRetry = { viewModel.retryPriceComparison() },
-                    onSuccess = { products ->
-                        if (products.isEmpty()) {
-
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "No price comparisons found",
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
-                                    Text(
-                                        text = "Try again or check your internet connection",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        } else {
-                            LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                itemsIndexed(products) { index, product ->
-                                    PriceComparisonCard(
-                                        product = product,
-                                        isLowestPrice = index == 0,
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
+            UiStateHandler(
+                state = priceComparisonState,
+                modifier = Modifier.fillMaxSize(),
+                onRetry = { viewModel.loadPriceComparison(productName) },
+                onSuccess = { products ->
+                    if (products.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "No price comparisons found",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Text(
+                                    text = "Try again or check your internet connection",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
-                    },
-                )
-            }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            itemsIndexed(products) { index, product ->
+                                PriceComparisonCard(
+                                    product = product,
+                                    isLowestPrice = index == 0,
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    }
+                }
+            )
         }
     }
+}
 
-
+@RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun PriceCompareScreenPreview() {

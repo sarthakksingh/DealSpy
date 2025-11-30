@@ -63,228 +63,190 @@ fun SearchScreen(
     navController: NavController
 ) {
     val context = LocalContext.current
+    var query by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
-        var query by remember { mutableStateOf("") }
-        val keyboardController = LocalSoftwareKeyboardController.current
-        val snackbarHostState = remember { SnackbarHostState() }
-        val coroutineScope = rememberCoroutineScope()
+    val searchListState by searchViewModel.searchList.collectAsState()
+    val saveForLaterState by searchViewModel.saveForLaterState.collectAsState()
+    val addToWatchlistState by watchListViewModel.addToWatchlistState.collectAsState()
 
-        val searchListState by searchViewModel.searchList.collectAsState()
-        val savedItems by searchViewModel.savedItems.collectAsState()
-        val saveForLaterState by searchViewModel.saveForLaterState.collectAsState()
-        val addToWatchlistState by watchListViewModel.addToWatchlistState.collectAsState()
-        val removeFromWatchlistState by watchListViewModel.removeFromWatchlistState.collectAsState()
+    val popularCategories = listOf(
+        SearchCategory("T-Shirts", "https://image.hm.com/assets/hm/ec/8f/ec8f4c42235bc4d6dece8e0c82da5aa9800e8e36.jpg?imwidth=1260"),
+        SearchCategory("Lipsticks", "https://images-static.nykaa.com/media/catalog/product/7/b/7b8686c8904245710958_2.jpg?tr=w-344,h-344,cm-pad_resize"),
+        SearchCategory("Hair Care", "https://cdn.tirabeauty.com/v2/billowing-snowflake-434234/tira-p/wrkr/products/pictures/item/free/resize-w:1080/1163626/caN5Xm1ey_-1163626_1.jpg"),
+        SearchCategory("Backpacks", "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/25885877663942eba56602bea225b65e_9366/adidas_Classic_Yay_Sport_Graphic_Backpack_Beige_JX9075_01_00_standard.jpg"),
+        SearchCategory("Shoes", "https://dawntown.co.in/cdn/shop/files/off-white-x-air-jordan-1-retro-high-og-chicago-745075.jpg?v=1749480653&width=1062"),
+        SearchCategory("iPhone", "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-17-pro-finish-select-202509-6-9inch-cosmicorange?wid=1200&hei=700&fmt=webp")
+    )
 
-
-        val popularCategories = listOf(
-            SearchCategory("T-Shirts", "https://image.hm.com/assets/hm/ec/8f/ec8f4c42235bc4d6dece8e0c82da5aa9800e8e36.jpg?imwidth=1260"),
-            SearchCategory("Lipsticks", "https://images-static.nykaa.com/media/catalog/product/7/b/7b8686c8904245710958_2.jpg?tr=w-344,h-344,cm-pad_resize"),
-            SearchCategory("Hair Care", "https://cdn.tirabeauty.com/v2/billowing-snowflake-434234/tira-p/wrkr/products/pictures/item/free/resize-w:1080/1163626/caN5Xm1ey_-1163626_1.jpg"),
-            SearchCategory("Backpacks", "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/25885877663942eba56602bea225b65e_9366/adidas_Classic_Yay_Sport_Graphic_Backpack_Beige_JX9075_01_00_standard.jpg"),
-            SearchCategory("Shoes", "https://dawntown.co.in/cdn/shop/files/off-white-x-air-jordan-1-retro-high-og-chicago-745075.jpg?v=1749480653&width=1062"),
-            SearchCategory("iphone", "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-17-pro-finish-select-202509-6-9inch-cosmicorange?wid=5120&hei=2880&fmt=webp&qlt=90&.v=NUNzdzNKR0FJbmhKWm5YamRHb05tUzkyK3hWak1ybHhtWDkwUXVINFc0RnVrUzFnTVVSUnNLVnZUWUMxNTBGaGhsQTdPYWVGbmdIenAvNE9qYmZVYVFDb1F2RTNvUEVHRkpGaGtOSVFHak5NTEhXRE11VU1QNVo2eDJsWlpuWHQyaWthYXpzcEpXMExJLy9GTE9wWkNn&traceId=1"),
-            SearchCategory("Beauty Products", "https://m.media-amazon.com/images/I/51veXCSCAJL._SX679_.jpg"),
-            SearchCategory("Cups & Mugs", "https://nestasia.in/cdn/shop/products/DIN03-VERAPINK-BN820CN_4.jpg?v=1657889646&width=600")
-        )
-
-
-        LaunchedEffect(saveForLaterState) {
-            val currentState = saveForLaterState
-            when (currentState) {
-                is UiState.Success -> {
-                    Toast.makeText(context, currentState.data, Toast.LENGTH_SHORT).show()
-                    searchViewModel.resetSaveForLaterState()
-                }
-                is UiState.Error -> {
-                    Toast.makeText(context, "Error: ${currentState.message}", Toast.LENGTH_SHORT).show()
-                    searchViewModel.resetSaveForLaterState()
-                }
-                is UiState.NoInternet -> {
-                    Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
-                    searchViewModel.resetSaveForLaterState()
-                }
-                else -> { /* Do nothing for Loading and Idle states */ }
+    // Handle save for later state
+    LaunchedEffect(saveForLaterState) {
+        when (saveForLaterState) {
+            is UiState.Success -> {
+                Toast.makeText(context, "Saved for later!", Toast.LENGTH_SHORT).show()
+                searchViewModel.resetSaveForLaterState()
             }
-        }
-
-
-        LaunchedEffect(addToWatchlistState) {
-            val currentState = addToWatchlistState
-            when (currentState) {
-                is UiState.Success -> {
-                    Log.d("SearchScreen", "Product added to watchlist successfully")
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = currentState.data.toString(),
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                    watchListViewModel.resetAddState()
-                }
-                is UiState.Error -> {
-                    Log.e("SearchScreen", "Failed to add product to watchlist: ${currentState.message}")
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = "Failed to add to watchlist: ${currentState.message}",
-                            duration = SnackbarDuration.Long
-                        )
-                    }
-                    watchListViewModel.resetAddState()
-                }
-                is UiState.Loading -> {
-                    Log.d("SearchScreen", "Adding product to watchlist...")
-                }
-                else -> {}
+            is UiState.Error -> {
+                Toast.makeText(context, "Error: ${(saveForLaterState as UiState.Error).message}", Toast.LENGTH_SHORT).show()
+                searchViewModel.resetSaveForLaterState()
             }
-        }
-
-
-        LaunchedEffect(removeFromWatchlistState) {
-            val currentState = removeFromWatchlistState
-            when (currentState) {
-                is UiState.Success -> {
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = currentState.data.toString(),
-                            duration = SnackbarDuration.Short
-                        )
-                    }
-                    watchListViewModel.resetRemoveState()
-                }
-                is UiState.Error -> {
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = "Failed to remove from watchlist: ${currentState.message}",
-                            duration = SnackbarDuration.Long
-                        )
-                    }
-                    watchListViewModel.resetRemoveState()
-                }
-                else -> {}
+            is UiState.NoInternet -> {
+                Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
+                searchViewModel.resetSaveForLaterState()
             }
+            else -> {}
         }
+    }
 
-        Scaffold(
-            topBar = {
-                AppTopBar(
-                    title = "Search",
-                    navController = navController
-                )
-            },
-            bottomBar = {
-                BottomNavBar(
-                    navController = navController,
-                    bottomMenu = BottomNavOptions.bottomNavOptions
-                )
-            },
-            snackbarHost = {
-                SnackbarHost(hostState = snackbarHostState)
-            },
-            containerColor = MaterialTheme.colorScheme.background
-        ) { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(16.dp)
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    placeholder = {
-                        Text(
-                            "Search for products...",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    },
-                    trailingIcon = {
-                        IconButton(
-                            modifier = Modifier.padding(8.dp),
-                            onClick = {
-                                if (query.isNotBlank()) {
-                                    searchViewModel.searchProductList(query)
-                                    keyboardController?.hide()
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.Search, contentDescription = "Search")
-                        }
-                    },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        cursorColor = MaterialTheme.colorScheme.primary
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onSearch = {
+    // Handle add to watchlist state
+    LaunchedEffect(addToWatchlistState) {
+        when (addToWatchlistState) {
+            is UiState.Success -> {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Added to watchlist!",
+                        duration = SnackbarDuration.Short
+                    )
+                }
+                watchListViewModel.resetAddState()
+            }
+            is UiState.Error -> {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Failed to add to watchlist",
+                        duration = SnackbarDuration.Long
+                    )
+                }
+                watchListViewModel.resetAddState()
+            }
+            else -> {}
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = "Search",
+                navController = navController
+            )
+        },
+        bottomBar = {
+            BottomNavBar(
+                navController = navController,
+                bottomMenu = BottomNavOptions.bottomNavOptions
+            )
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp)
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            // Search TextField
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                placeholder = {
+                    Text(
+                        "Search for products...",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                trailingIcon = {
+                    IconButton(
+                        modifier = Modifier.padding(8.dp),
+                        onClick = {
                             if (query.isNotBlank()) {
                                 searchViewModel.searchProductList(query)
                                 keyboardController?.hide()
                             }
                         }
-                    )
-                )
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                if (query.isBlank()) {
-                    PopularCategorySection(
-                        categories = popularCategories,
-                        onCategoryClick = { category ->
-                            query = category
-                            searchViewModel.searchProductList(category)
+                    ) {
+                        Icon(Icons.Default.Search, contentDescription = "Search")
+                    }
+                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    cursorColor = MaterialTheme.colorScheme.primary
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        if (query.isNotBlank()) {
+                            searchViewModel.searchProductList(query)
+                            keyboardController?.hide()
                         }
-                    )
-                } else {
-                    UiStateHandler(
-                        state = searchListState,
-                        modifier = Modifier.fillMaxSize(),
-                        onRetry = { searchViewModel.searchProductList(query) },
-                        onSuccess = { products ->
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "Showing results for \"$query\"",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold
-                                )
+                    }
+                )
+            )
 
-                                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
-                                LazyColumn {
-                                    items(products) { product ->
-                                        ShimmerSearchResultCard(
-                                            isLoading = false,
-                                            contentAfterLoading = {
-                                                SearchResultCard(
-                                                    product = product,
-                                                    isSaved = savedItems.contains(product.deepLink),
-                                                    onToggleSave = { productToSave ->
-                                                        searchViewModel.toggleSaveForLater(productToSave)
-                                                    },
-                                                    onAddToWatch = { productToWatch ->
-                                                        watchListViewModel.addToWatchlist(product)
-                                                        Log.d("SearchScreen", "Adding to watchlist: ${productToWatch.name}")
-                                                    }
-                                                )
-                                            },
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(vertical = 8.dp)
-                                        )
-                                    }
+            // Show popular categories or search results
+            if (query.isBlank()) {
+                PopularCategorySection(
+                    categories = popularCategories,
+                    onCategoryClick = { category ->
+                        query = category
+                        searchViewModel.searchProductList(category)
+                    }
+                )
+            } else {
+                // Search Results
+                UiStateHandler(
+                    state = searchListState,
+                    modifier = Modifier.fillMaxSize(),
+                    onRetry = { searchViewModel.searchProductList(query) },
+                    onSuccess = { products ->
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Showing results for \"$query\"",
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(8.dp)
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            LazyColumn {
+                                items(products) { product ->
+                                    ShimmerSearchResultCard(
+                                        isLoading = false,
+                                        contentAfterLoading = {
+                                            SearchResultCard(
+                                                product = product,
+                                                isSaved = false,
+                                                onToggleSave = { productToSave ->
+                                                    searchViewModel.toggleSaveForLater(productToSave)
+                                                },
+                                                onAddToWatch = { productToWatch ->
+                                                    watchListViewModel.addToWatchlist(productToWatch)
+                                                    Log.d("SearchScreen", "Adding to watchlist: ${productToWatch.name}")
+                                                }
+                                            )
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp)
+                                    )
                                 }
                             }
                         }
-                    )
-                }
+                    }
+                )
             }
         }
     }
-
-
-
+}

@@ -1,7 +1,5 @@
 package com.example.dealspy.view.screens
 
-//TODO: Add add to remove watchlist
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -37,14 +35,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.dealspy.data.model.UiProduct
+import com.example.dealspy.data.model.Product
 import com.example.dealspy.ui.state.UiState
 import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
-import com.example.dealspy.view.navigation.DealSpyScreens
-import com.example.dealspy.view.utils.ProductCard
+import com.example.dealspy.view.utils.WatchCard
 import com.example.dealspy.vm.WatchListViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,106 +50,101 @@ fun WatchlistScreen(
     viewModel: WatchListViewModel = hiltViewModel(),
     navController: NavController
 ) {
-    val state by viewModel.watchListState.collectAsState()
-    val addState by viewModel.addToWatchlistState.collectAsState()
-    val removeState by viewModel.removeFromWatchlistState.collectAsState()
-
+    val watchListState by viewModel.watchlist.collectAsState()
     val pullToRefreshState = rememberPullToRefreshState()
 
-
-    val isApiLoading = state is UiState.Loading
+    val isApiLoading = watchListState is UiState.Loading
     var isPulling by remember { mutableStateOf(false) }
-
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var productToDelete by remember { mutableStateOf<UiProduct?>(null) }
-
+    var productToDelete by remember { mutableStateOf<Product?>(null) }
 
     val isRefreshing = isApiLoading && isPulling
 
     LaunchedEffect(navController.currentBackStackEntry) {
-        viewModel.loadWatchlist()
+        viewModel.getWatchlistProducts()
     }
 
-    LaunchedEffect(addState, removeState) {
-        if (addState is UiState.Success || removeState is UiState.Success) {
-            viewModel.resetAddState()
-            viewModel.resetRemoveState()
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        topBar = {
+            AppTopBar(
+                title = "Watchlist",
+                navController = navController
+            )
+        },
+        bottomBar = {
+            BottomNavBar(
+                navController = navController,
+                bottomMenu = BottomNavOptions.bottomNavOptions
+            )
         }
-    }
-
-
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.background,
-            topBar = {
-                AppTopBar(
-                    title = "Watchlist",
-                    navController = navController,
-                )
+    ) { innerPadding ->
+        PullToRefreshBox(
+            state = pullToRefreshState,
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isPulling = true
+                viewModel.getWatchlistProducts()
             },
-            bottomBar = {
-                BottomNavBar(
-                    navController = navController,
-                    bottomMenu = BottomNavOptions.bottomNavOptions
-                )
-            }
-        ) { innerPadding ->
-            PullToRefreshBox(
-                state = pullToRefreshState,
-                isRefreshing = isRefreshing,
-                onRefresh = {
-                    isPulling = true
-                    viewModel.refresh()
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                indicator = {
-                    if (!isApiLoading) {
-                        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            indicator = {
+                if (!isApiLoading) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        PullToRefreshDefaults.Indicator(
+                            state = pullToRefreshState,
+                            isRefreshing = isRefreshing,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            PullToRefreshDefaults.Indicator(
-                                state = pullToRefreshState,
-                                isRefreshing = isRefreshing,
-                                modifier = Modifier
-                            )
-                        }
+                        )
                     }
                 }
-            ) {
-                UiStateHandler(
-                    state = state,
-                    modifier = Modifier.fillMaxSize(),
-                    onRetry = { viewModel.loadWatchlist() },
-                    onIdle = {
-
-                        if (isApiLoading) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
+            }
+        ) {
+            UiStateHandler(
+                state = watchListState,
+                modifier = Modifier.fillMaxSize(),
+                onRetry = { viewModel.getWatchlistProducts() },
+                onIdle = {
+                    if (isApiLoading) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally
-                                ) {
-                                    CircularProgressIndicator()
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Text(
-                                        text = if (isPulling) "Refreshing..." else "Loading watchlist...",
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
+                                CircularProgressIndicator()
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = if (isPulling) "Refreshing..." else "Loading watchlist...",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
                             }
                         }
-                    },
-                    onSuccess = { products ->
+                    }
+                },
+                onSuccess = { products ->
+                    LaunchedEffect(Unit) {
+                        isPulling = false
+                    }
 
-                        LaunchedEffect(Unit) {
-                            isPulling = false
+                    if (products.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No items in watchlist",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
-
+                    } else {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             contentPadding = PaddingValues(8.dp),
@@ -160,29 +152,26 @@ fun WatchlistScreen(
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            items(products) { uiProduct ->
-                                ProductCard(
-                                    uiProduct = uiProduct,
-                                    onCardClick = { productName ->
-                                        navController.navigate(
-                                            DealSpyScreens.createPriceCompareRoute(
-                                                productName
-                                            )
-                                        )
-                                    },
-                                    onDelete = { selectedProduct ->
-
-                                        productToDelete = selectedProduct
+                            items(
+                                items = products,
+                                key = { it.id ?: it.name }
+                            ) { product ->
+                                WatchCard(
+                                    product = product,
+                                    onDelete = {
+                                        productToDelete = product
                                         showDeleteDialog = true
                                     }
                                 )
                             }
                         }
                     }
-                )
-            }
+                }
+            )
         }
+    }
 
+    // Delete Confirmation Dialog
     if (showDeleteDialog && productToDelete != null) {
         AlertDialog(
             onDismissRequest = {
@@ -193,20 +182,25 @@ fun WatchlistScreen(
                 Text("Remove from Watchlist")
             },
             text = {
-                Text("Are you sure you want to remove '${productToDelete?.product?.name}' from your watchlist?")
+                Text(
+                    "Are you sure you want to remove '${productToDelete?.name}' from your watchlist?",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        // Actually delete the product
-                        productToDelete?.let {
-                            viewModel.removeFromWatchlist(it.product.name)
+                        productToDelete?.id?.let {
+                            viewModel.removeFromWatchlist(it)
                         }
                         showDeleteDialog = false
                         productToDelete = null
-                    }
+                    },
+                    colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
                 ) {
-                    Text("Remove", color = MaterialTheme.colorScheme.error)
+                    Text("Remove")
                 }
             },
             dismissButton = {
@@ -222,4 +216,3 @@ fun WatchlistScreen(
         )
     }
 }
-

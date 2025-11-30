@@ -2,7 +2,7 @@ package com.example.dealspy.data.repo
 
 import android.util.Log
 import com.example.dealspy.data.model.CustomResponse
-import com.example.dealspy.data.model.SaveForLater
+import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.UserDetail
 import com.example.dealspy.data.remote.SaveForLaterApi
 import com.google.firebase.auth.FirebaseAuth
@@ -11,7 +11,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SaveForLaterRepo @Inject constructor(
+class SaveForLaterRepository @Inject constructor(
     private val saveForLaterApi: SaveForLaterApi,
     private val auth: FirebaseAuth
 ) {
@@ -26,10 +26,10 @@ class SaveForLaterRepo @Inject constructor(
     suspend fun getUserProfile(): CustomResponse<UserDetail> {
         return try {
             val token = getAuthToken()
-            Log.d("SaveForLaterRepo", "Fetching user profile...")
+            Log.d("SaveForLaterRepository", "Fetching user profile...")
             saveForLaterApi.getProfile(token)
         } catch (e: Exception) {
-            Log.e("SaveForLaterRepo", "Failed to get user profile", e)
+            Log.e("SaveForLaterRepository", "Failed to get user profile", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to fetch user profile",
@@ -38,14 +38,13 @@ class SaveForLaterRepo @Inject constructor(
         }
     }
 
-
-    suspend fun getSaveForLater(): CustomResponse<List<SaveForLater>> {
+    suspend fun getSaveForLater(): CustomResponse<List<Product>> {
         return try {
             val token = getAuthToken()
-            Log.d("SaveForLaterRepo", "Fetching save for later items...")
+            Log.d("SaveForLaterRepository", "Fetching save for later items...")
             saveForLaterApi.getSaveForLater(token)
         } catch (e: Exception) {
-            Log.e("SaveForLaterRepo", "Failed to get save for later", e)
+            Log.e("SaveForLaterRepository", "Failed to get save for later", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to fetch save for later",
@@ -54,16 +53,17 @@ class SaveForLaterRepo @Inject constructor(
         }
     }
 
-    suspend fun addToSaveForLater(saveForLaterItem: SaveForLater): CustomResponse<Unit> {
+    suspend fun addToSaveForLater(product: Product): CustomResponse<Product> {
         return try {
             val token = getAuthToken()
-            Log.d("SaveForLaterRepo", "Adding to save for later: ${saveForLaterItem.productName}")
-            saveForLaterApi.postSaveForLater(saveForLaterItem, token)
+            Log.d("SaveForLaterRepository", "Adding to save for later: ${product.name}")
+            saveForLaterApi.postSaveForLater(product, token)
         } catch (e: Exception) {
-            Log.e("SaveForLaterRepo", "Failed to add to save for later", e)
+            Log.e("SaveForLaterRepository", "Failed to add to save for later", e)
             CustomResponse(
                 success = false,
-                message = e.message ?: "Failed to add to save for later",null
+                message = e.message ?: "Failed to add to save for later",
+                data = null
             )
         }
     }
@@ -71,13 +71,14 @@ class SaveForLaterRepo @Inject constructor(
     suspend fun removeFromSaveForLater(productName: String): CustomResponse<Unit> {
         return try {
             val token = getAuthToken()
-            Log.d("SaveForLaterRepo", "Removing from save for later: $productName")
+            Log.d("SaveForLaterRepository", "Removing from save for later: $productName")
             saveForLaterApi.deleteSaveForLaterItem(productName, token)
         } catch (e: Exception) {
-            Log.e("SaveForLaterRepo", "Failed to remove from save for later", e)
+            Log.e("SaveForLaterRepository", "Failed to remove from save for later", e)
             CustomResponse(
                 success = false,
-                message = e.message ?: "Failed to remove from save for later",null
+                message = e.message ?: "Failed to remove from save for later",
+                data = null
             )
         }
     }

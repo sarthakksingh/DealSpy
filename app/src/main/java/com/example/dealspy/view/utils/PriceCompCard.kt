@@ -1,6 +1,7 @@
 package com.example.dealspy.view.utils
 
 import android.content.Intent
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
+
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -32,19 +34,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import coil.compose.AsyncImage
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.ui.theme.DealSpyTheme
+import kotlin.let
 
 @Composable
 fun PriceComparisonCard(
     modifier: Modifier = Modifier,
     product: Product,
-    isLowestPrice: Boolean = false,
-
+    isLowestPrice: Boolean = false
 ) {
     val context = LocalContext.current
 
@@ -60,16 +60,15 @@ fun PriceComparisonCard(
             else MaterialTheme.colorScheme.surfaceContainer
         ),
         border = if (isLowestPrice)
-            androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
         else null
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             AsyncImage(
-                model = product.imageURL,
+                model = product.imageUrl,
                 contentDescription = product.name,
                 modifier = Modifier
                     .size(80.dp)
@@ -79,11 +78,9 @@ fun PriceComparisonCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-
                 if (isLowestPrice) {
                     Box(
                         modifier = Modifier
@@ -100,41 +97,35 @@ fun PriceComparisonCard(
                             fontWeight = FontWeight.Bold
                         )
                     }
+
                     Spacer(modifier = Modifier.height(6.dp))
                 }
 
-
-                product.platformName?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                Text(
+                    text = product.platformName,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
 
                 Spacer(modifier = Modifier.height(4.dp))
-
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    product.priceRaw?.let {
-                        Text(
-                            text = it,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = if (isLowestPrice) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
+                    Text(
+                        text = product.price,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = if (isLowestPrice) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.onSurface
+                    )
 
-
-                    if (product.lastKnownPrice > product.price) {
+                    product.lastKnownPrice?.let { lastPrice ->
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "₹${product.lastKnownPrice}",
+                            text = "₹$lastPrice",
                             style = MaterialTheme.typography.bodyMedium,
                             textDecoration = TextDecoration.LineThrough,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -142,33 +133,37 @@ fun PriceComparisonCard(
                     }
                 }
 
-
-                if (product.lastKnownPrice > product.price) {
-                    Spacer(modifier = Modifier.height(2.dp))
+                // Show discount if available
+                product.getDiscountPercentage()?.let { discount ->
+                    Spacer(modifier = Modifier.height(8.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-
-                        val discountPercent = ((product.lastKnownPrice - product.price).toFloat() / product.lastKnownPrice * 100).toInt()
                         Text(
-                            text = "$discountPercent% OFF",
+                            text = discount,
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.error,
                             fontWeight = FontWeight.Medium
                         )
 
+                        product.lastKnownPrice?.let { lastPrice ->
+                            val priceDropped = (lastPrice - product.price
+                                .replace(Regex("[^0-9.]"), "")
+                                .toDouble())
 
-                        Text(
-                            text = "Save ₹${product.lastKnownPrice - product.price}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Medium
-                        )
+                            if (priceDropped > 0) {
+                                Text(
+                                    text = "Save ₹${priceDropped.toInt()}",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            }
+                        }
                     }
                 }
             }
-
 
             Spacer(modifier = Modifier.width(8.dp))
 
@@ -178,7 +173,7 @@ fun PriceComparisonCard(
                         val intent = Intent(Intent.ACTION_VIEW, product.deepLink.toUri())
                         context.startActivity(intent)
                     } catch (e: Exception) {
-                        // Handle error - could show a toast
+
                     }
                 },
                 modifier = Modifier.width(80.dp),
@@ -192,62 +187,13 @@ fun PriceComparisonCard(
                         contentDescription = "Visit Store",
                         modifier = Modifier.size(16.dp)
                     )
+
                     Text(
                         text = "Visit",
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
             }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PriceComparisonCardPreview() {
-    DealSpyTheme {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(16.dp)
-        ) {
-            // Best price card
-            PriceComparisonCard(
-                product = Product(
-                    name = "iPhone 15 Pro",
-                    platformName = "Amazon",
-                    priceRaw = "₹134,900",
-                    lastKnownPrice = 149900,
-                    deepLink = "https://amazon.in/iphone",
-                    imageURL = "https://images.unsplash.com/photo-1592750475338-74b7b21085ab"
-                ),
-                isLowestPrice = true
-            )
-
-            // Regular card
-            PriceComparisonCard(
-                product = Product(
-                    name = "iPhone 15 Pro",
-                    platformName = "Flipkart",
-                    priceRaw = "₹139,999",
-                    lastKnownPrice = 149900,
-                    deepLink = "https://flipkart.com/iphone",
-                    imageURL = "https://images.unsplash.com/photo-1592750475338-74b7b21085ab"
-                ),
-                isLowestPrice = false
-            )
-
-            // Card with no discount
-            PriceComparisonCard(
-                product = Product(
-                    name = "iPhone 15 Pro",
-                    platformName = "Croma",
-                    priceRaw = "₹149,999",
-                    lastKnownPrice = 149999,
-                    deepLink = "https://croma.com/iphone",
-                    imageURL = "https://images.unsplash.com/photo-1592750475338-74b7b21085ab"
-                ),
-                isLowestPrice = false
-            )
         }
     }
 }
