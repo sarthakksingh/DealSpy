@@ -1,4 +1,3 @@
-
 package com.example.dealspy.di
 
 import android.content.Context
@@ -6,9 +5,10 @@ import com.example.dealspy.BuildConfig
 import com.example.dealspy.data.remote.AuthApi
 import com.example.dealspy.data.remote.WatchlistApi
 import com.example.dealspy.data.remote.SaveForLaterApi
+import com.example.dealspy.data.remote.SearchApi
 import com.example.dealspy.data.remote.UserApi
-import com.example.dealspy.data.repo.GeminiService
 import com.example.dealspy.data.repo.SaveForLaterRepo
+import com.example.dealspy.data.repo.SearchRepo
 import com.example.dealspy.data.repo.ThemeRepo
 import com.example.dealspy.data.repo.UserRepo
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -34,10 +34,20 @@ object AppModule {
     @Singleton
     fun providesFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
 
+
+
     @Provides
     @Singleton
-    fun providesGeminiService(): GeminiService = GeminiService()
+    fun provideSearchApi(retrofit: Retrofit): SearchApi {
+        return retrofit.create(SearchApi::class.java)
+    }
 
+    @Provides
+    @Singleton
+    fun provideSearchRepo(
+        searchApi: SearchApi
+    ): SearchRepo{ return SearchRepo(searchApi = searchApi)
+    }
     @Provides
     @Singleton
     fun provideGoogleSignInClient(@ApplicationContext context: Context): GoogleSignInClient {
@@ -49,6 +59,7 @@ object AppModule {
 
         return GoogleSignIn.getClient(context, googleSignInOptions)
     }
+
     @Provides
     @Singleton
     fun provideSaveForLaterRepository(
@@ -73,7 +84,6 @@ object AppModule {
             )
             .build()
     }
-
 
 
     @Provides

@@ -7,16 +7,16 @@ data class Product(
     val id: String? = null,
 
     @SerializedName("productName")
-    val name: String,
+    val name: String?=null,
 
     @SerializedName("brand")
     val brand: String? = null,
 
     @SerializedName("platform")
-    val platformName: String,
+    val platformName: String?=null,
 
     @SerializedName("price")
-    val price: String,
+    val price: String?=null,
 
     @SerializedName("lastKnownPrice")
     val lastKnownPrice: Double? = null,
@@ -29,7 +29,7 @@ data class Product(
 ) {
     fun getDiscountPercentage(): String? {
         return if (lastKnownPrice != null && lastKnownPrice > 0) {
-            val currentPrice = price.replace(Regex("[^0-9.]"), "").toDoubleOrNull()
+            val currentPrice = price?.replace(Regex("[^0-9.]"), "")?.toDoubleOrNull()
             if (currentPrice != null && currentPrice > 0) {
                 val discount = ((lastKnownPrice - currentPrice) / lastKnownPrice * 100).toInt()
                 if (discount > 0) "$discount% OFF" else null

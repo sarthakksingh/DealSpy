@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.repo.SaveForLaterRepository
-import com.example.dealspy.data.repo.UserRepository
+import com.example.dealspy.data.repo.SaveForLaterRepo
+import com.example.dealspy.data.repo.UserRepo
 import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,8 +18,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val saveForLaterRepository: SaveForLaterRepository,
-    private val userRepository: UserRepository,
+    private val saveForLaterRepo: SaveForLaterRepo,
+    private val userRepository: UserRepo,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
@@ -38,7 +38,7 @@ class ProfileViewModel @Inject constructor(
             try {
                 _wishlist.value = UiState.Loading
                 Log.d("ProfileViewModel", "Loading wishlist (save for later)...")
-                val response = saveForLaterRepository.getSaveForLater()
+                val response = saveForLaterRepo.getSaveForLater()
                 if (response.success == true && response.data != null) {
                     Log.d("ProfileViewModel", "Wishlist loaded: ${response.data.size} items")
                     _wishlist.value = if (response.data.isEmpty()) {
@@ -66,7 +66,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 Log.d("ProfileViewModel", "Removing from wishlist: $productName")
-                val response = saveForLaterRepository.removeFromSaveForLater(productName)
+                val response = saveForLaterRepo.removeFromSaveForLater(productName)
                 if (response.success == true) {
                     Log.d("ProfileViewModel", "Successfully removed from wishlist")
                     getWishlistProducts()

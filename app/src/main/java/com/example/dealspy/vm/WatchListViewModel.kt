@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.repo.WatchlistRepository
+import com.example.dealspy.data.repo.WatchlistRepo
 import com.example.dealspy.ui.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class WatchListViewModel @Inject constructor(
-    private val watchlistRepository: WatchlistRepository
+    private val watchlistRepo: WatchlistRepo
 ) : ViewModel() {
 
     private val _watchlist = MutableStateFlow<UiState<List<Product>>>(UiState.Idle)
@@ -36,7 +36,7 @@ class WatchListViewModel @Inject constructor(
             try {
                 _watchlist.value = UiState.Loading
                 Log.d("WatchListViewModel", "Loading watchlist...")
-                val response = watchlistRepository.getWatchlist()
+                val response = watchlistRepo.getWatchlist()
                 if (response.success && response.data != null) {
                     Log.d("WatchListViewModel", "Watchlist loaded: ${response.data.size} items")
                     _watchlist.value = if (response.data.isEmpty()) {
@@ -65,7 +65,7 @@ class WatchListViewModel @Inject constructor(
             try {
                 _addToWatchlistState.value = UiState.Loading
                 Log.d("WatchListViewModel", "Adding to watchlist: ${product.name}")
-                val response = watchlistRepository.addToWatchlist(product)
+                val response = watchlistRepo.addToWatchlist(product)
                 if (response.success) {
                     Log.d("WatchListViewModel", "Added to watchlist successfully")
                     _addToWatchlistState.value = UiState.Success("Added to watchlist!")
@@ -88,7 +88,7 @@ class WatchListViewModel @Inject constructor(
             try {
                 _removeFromWatchlistState.value = UiState.Loading
                 Log.d("WatchListViewModel", "Removing from watchlist: $productName")
-                val response = watchlistRepository.removeFromWatchlist(productName)
+                val response = watchlistRepo.removeFromWatchlist(productName)
                 if (response.success) {
                     Log.d("WatchListViewModel", "Removed from watchlist successfully")
                     _removeFromWatchlistState.value = UiState.Success("Removed from watchlist")
