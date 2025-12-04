@@ -75,7 +75,7 @@ fun WishlistCard(
                         .padding(horizontal = 8.dp)
                 ) {
                     Text(
-                        text = product.name,
+                        text = product.name?:"Unknown",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 2,
@@ -85,7 +85,7 @@ fun WishlistCard(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = product.platformName,
+                        text = product.platformName?:"Unknown",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -93,7 +93,7 @@ fun WishlistCard(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = product.price,
+                        text = product.price?:"Price Not Found",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary

@@ -1,27 +1,22 @@
 package com.example.dealspy.vm
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresExtension
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.repo.GeminiService
-import com.example.dealspy.data.repo.SaveForLaterRepository
+import com.example.dealspy.data.repo.SaveForLaterRepo
+import com.example.dealspy.data.repo.SearchRepo
 import com.example.dealspy.ui.state.UiState
-import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 import javax.inject.Inject
-
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val geminiService: GeminiService,
-    private val saveForLaterRepository: SaveForLaterRepository,
-    private val auth: FirebaseAuth
+    private val searchRepo: SearchRepo,
+    private val saveForLaterRepo: SaveForLaterRepo
 ) : ViewModel() {
 
     private val _searchList = MutableStateFlow<UiState<List<Product>>>(UiState.Idle)
@@ -30,18 +25,22 @@ class SearchViewModel @Inject constructor(
     private val _saveForLaterState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val saveForLaterState = _saveForLaterState.asStateFlow()
 
-    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     fun searchProductList(productName: String) {
         viewModelScope.launch {
             _searchList.value = UiState.Loading
             try {
-                val result = geminiService.generateSearchSuggestions(productName)
-                _searchList.value = if (result.isEmpty()) {
-                    UiState.NoData
+                val response = searchRepo.searchProducts(productName)
+                if (response.success && response.data != null) {
+                    val products = response.data  // ← Direct List<Product> from API
+                    _searchList.value = if (products.isEmpty()) {
+                        UiState.NoData
+                    } else {
+                        UiState.Success(products)
+                    }
+                    Log.d("SearchViewModel", "Search successful: ${products.size} products")
                 } else {
-                    UiState.Success(result)
+                    _searchList.value = UiState.Error(response.message ?: "Failed to get search results")
                 }
-                Log.d("SearchViewModel", "Search successful: ${result.size} products found")
             } catch (e: UnknownHostException) {
                 Log.e("SearchViewModel", "Network error", e)
                 _searchList.value = UiState.NoInternet
@@ -55,11 +54,12 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    // toggleSaveForLater and resetSaveForLaterState remain unchanged
     fun toggleSaveForLater(product: Product) {
         viewModelScope.launch {
             try {
                 _saveForLaterState.value = UiState.Loading
-                val response = saveForLaterRepository.addToSaveForLater(product)
+                val response = saveForLaterRepo.addToSaveForLater(product)
                 if (response.success) {
                     _saveForLaterState.value = UiState.Success("Added to Save for Later")
                     Log.d("SearchViewModel", "Added ${product.name} to save for later")

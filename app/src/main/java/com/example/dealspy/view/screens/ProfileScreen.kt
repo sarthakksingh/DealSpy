@@ -221,11 +221,11 @@ fun ProfileScreen(
                         ) {
                             items(
                                 items = products,
-                                key = { it.name }
+                                key = { it.name?:"Unknown" }
                             ) { product ->
                                 WishlistCard(
                                     product = product,
-                                    onDelete = { viewModel.removeFromWishlist(product.name)},
+                                    onDelete = { viewModel.removeFromWishlist(product.name?:"Unknown")},
                                         onAddToWatchlist = {}
 
                                 )

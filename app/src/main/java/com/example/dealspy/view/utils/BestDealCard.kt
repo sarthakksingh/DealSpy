@@ -72,7 +72,7 @@ fun BestDealCard(product: Product) {
                 )
 
                 Text(
-                    text = product.name,
+                    text = product.name?:"Unknown",
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold
@@ -86,7 +86,7 @@ fun BestDealCard(product: Product) {
                     )
 
                     Text(
-                        product.price,
+                        product.price?:"0",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.tertiary,
                         fontWeight = FontWeight.Bold

@@ -83,8 +83,8 @@ fun SearchResultCard(
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(product.name, style = MaterialTheme.typography.titleMedium)
-                Text(product.platformName, style = MaterialTheme.typography.labelSmall)
+                Text(product.name?:"Unknown", style = MaterialTheme.typography.titleMedium)
+                Text(product.platformName?:"Unknown", style = MaterialTheme.typography.labelSmall)
 
                 Spacer(modifier = Modifier.height(4.dp))
 
