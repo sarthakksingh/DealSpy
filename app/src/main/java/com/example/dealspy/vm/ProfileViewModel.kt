@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.repo.SaveForLaterRepository
+import com.example.dealspy.data.repo.SaveForLaterRepo
 import com.example.dealspy.data.repo.UserRepo
 import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val saveForLaterRepository: SaveForLaterRepository,
+    private val saveForLaterRepo: SaveForLaterRepo,
     private val userRepository: UserRepo,
     private val auth: FirebaseAuth
 ) : ViewModel() {
@@ -38,18 +38,21 @@ class ProfileViewModel @Inject constructor(
             try {
                 _wishlist.value = UiState.Loading
                 Log.d("ProfileViewModel", "Loading wishlist (save for later)...")
-                val response = saveForLaterRepository.getSaveForLater()
-                if (response.success && response.data != null) {
+
                 val response = saveForLaterRepo.getSaveForLater()
-                if (response.success == true && response.data != null) {
-                    Log.d("ProfileViewModel", "Wishlist loaded: ${response.data.size} items")
+                if (response.success && response.data != null) {
+                    Log.d(
+                        "ProfileViewModel",
+                        "Wishlist loaded: ${response.data.size} items"
+                    )
                     _wishlist.value = if (response.data.isEmpty()) {
                         UiState.NoData
                     } else {
                         UiState.Success(response.data)
                     }
                 } else {
-                    _wishlist.value = UiState.Error(response.message ?: "Failed to fetch wishlist")
+                    _wishlist.value =
+                        UiState.Error(response.message ?: "Failed to fetch wishlist")
                 }
             } catch (e: UnknownHostException) {
                 Log.e("ProfileViewModel", "Network error", e)
@@ -59,7 +62,8 @@ class ProfileViewModel @Inject constructor(
                 _wishlist.value = UiState.ServerError
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Error loading wishlist", e)
-                _wishlist.value = UiState.Error(e.message ?: "Unknown error occurred")
+                _wishlist.value =
+                    UiState.Error(e.message ?: "Unknown error occurred")
             }
         }
     }
@@ -69,7 +73,7 @@ class ProfileViewModel @Inject constructor(
             try {
                 Log.d("ProfileViewModel", "Removing from wishlist: $productName")
                 val response = saveForLaterRepo.removeFromSaveForLater(productName)
-                if (response.success == true) {
+                if (response.success) {
                     Log.d("ProfileViewModel", "Successfully removed from wishlist")
                     getWishlistProducts()
                 } else {
@@ -86,20 +90,24 @@ class ProfileViewModel @Inject constructor(
             try {
                 _deleteUserState.value = UiState.Loading
                 Log.d("ProfileViewModel", "Attempting to delete user account")
+
                 val response = userRepository.deleteUser()
                 if (response.success) {
                     Log.d("ProfileViewModel", "Account deleted successfully")
-                    _deleteUserState.value = UiState.Success(response.message ?: "Account deleted successfully")
+                    _deleteUserState.value =
+                        UiState.Success(response.message ?: "Account deleted successfully")
                 } else {
                     Log.e("ProfileViewModel", "Delete failed: ${response.message}")
-                    _deleteUserState.value = UiState.Error(response.message ?: "Failed to delete account")
+                    _deleteUserState.value =
+                        UiState.Error(response.message ?: "Failed to delete account")
                 }
             } catch (e: UnknownHostException) {
                 Log.e("ProfileViewModel", "Network error deleting account", e)
                 _deleteUserState.value = UiState.NoInternet
             } catch (e: Exception) {
                 Log.e("ProfileViewModel", "Error deleting account", e)
-                _deleteUserState.value = UiState.Error(e.message ?: "Failed to delete account")
+                _deleteUserState.value =
+                    UiState.Error(e.message ?: "Failed to delete account")
             }
         }
     }
