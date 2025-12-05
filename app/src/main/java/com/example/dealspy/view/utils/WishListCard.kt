@@ -93,7 +93,7 @@ fun WishlistCard(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = product.price,
+                        text = "₹${product.price ?: 0.0}",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary

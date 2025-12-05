@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.repo.SaveForLaterRepository
-import com.example.dealspy.data.repo.UserRepository
+import com.example.dealspy.data.repo.UserRepo
 import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val saveForLaterRepository: SaveForLaterRepository,
-    private val userRepository: UserRepository,
+    private val userRepository: UserRepo,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
@@ -39,7 +39,7 @@ class ProfileViewModel @Inject constructor(
                 _wishlist.value = UiState.Loading
                 Log.d("ProfileViewModel", "Loading wishlist (save for later)...")
                 val response = saveForLaterRepository.getSaveForLater()
-                if (response.success == true && response.data != null) {
+                if (response.success && response.data != null) {
                     Log.d("ProfileViewModel", "Wishlist loaded: ${response.data.size} items")
                     _wishlist.value = if (response.data.isEmpty()) {
                         UiState.NoData
@@ -67,7 +67,7 @@ class ProfileViewModel @Inject constructor(
             try {
                 Log.d("ProfileViewModel", "Removing from wishlist: $productName")
                 val response = saveForLaterRepository.removeFromSaveForLater(productName)
-                if (response.success == true) {
+                if (response.success) {
                     Log.d("ProfileViewModel", "Successfully removed from wishlist")
                     getWishlistProducts()
                 } else {
@@ -85,7 +85,7 @@ class ProfileViewModel @Inject constructor(
                 _deleteUserState.value = UiState.Loading
                 Log.d("ProfileViewModel", "Attempting to delete user account")
                 val response = userRepository.deleteUser()
-                if (response.success == true) {
+                if (response.success) {
                     Log.d("ProfileViewModel", "Account deleted successfully")
                     _deleteUserState.value = UiState.Success(response.message ?: "Account deleted successfully")
                 } else {

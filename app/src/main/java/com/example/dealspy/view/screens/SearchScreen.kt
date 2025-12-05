@@ -78,10 +78,12 @@ fun SearchScreen(
         SearchCategory("Hair Care", "https://cdn.tirabeauty.com/v2/billowing-snowflake-434234/tira-p/wrkr/products/pictures/item/free/resize-w:1080/1163626/caN5Xm1ey_-1163626_1.jpg"),
         SearchCategory("Backpacks", "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/25885877663942eba56602bea225b65e_9366/adidas_Classic_Yay_Sport_Graphic_Backpack_Beige_JX9075_01_00_standard.jpg"),
         SearchCategory("Shoes", "https://dawntown.co.in/cdn/shop/files/off-white-x-air-jordan-1-retro-high-og-chicago-745075.jpg?v=1749480653&width=1062"),
-        SearchCategory("iPhone", "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-17-pro-finish-select-202509-6-9inch-cosmicorange?wid=1200&hei=700&fmt=webp")
+        SearchCategory("iphone", "https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-17-pro-finish-select-202509-6-9inch-cosmicorange?wid=5120&hei=2880&fmt=webp&qlt=90&.v=NUNzdzNKR0FJbmhKWm5YamRHb05tUzkyK3hWak1ybHhtWDkwUXVINFc0RnVrUzFnTVVSUnNLVnZUWUMxNTBGaGhsQTdPYWVGbmdIenAvNE9qYmZVYVFDb1F2RTNvUEVHRkpGaGtOSVFHak5NTEhXRE11VU1QNVo2eDJsWlpuWHQyaWthYXpzcEpXMExJLy9GTE9wWkNn&traceId=1"),
+        SearchCategory("Beauty Products", "https://m.media-amazon.com/images/I/51veXCSCAJL._SX679_.jpg"),
+        SearchCategory("Cups & Mugs", "https://nestasia.in/cdn/shop/products/DIN03-VERAPINK-BN820CN_4.jpg?v=1657889646&width=600")
     )
 
-    // Handle save for later state
+
     LaunchedEffect(saveForLaterState) {
         when (saveForLaterState) {
             is UiState.Success -> {

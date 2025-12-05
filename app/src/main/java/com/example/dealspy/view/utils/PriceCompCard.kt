@@ -115,7 +115,7 @@ fun PriceComparisonCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = product.price,
+                        text = "₹${product.price ?: 0.0}",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = if (isLowestPrice) MaterialTheme.colorScheme.primary
@@ -148,17 +148,18 @@ fun PriceComparisonCard(
                         )
 
                         product.lastKnownPrice?.let { lastPrice ->
-                            val priceDropped = (lastPrice - product.price
-                                .replace(Regex("[^0-9.]"), "")
-                                .toDouble())
+                            val currentPrice = product.price
+                            if (currentPrice != null) {
+                                val priceDropped = lastPrice - currentPrice
 
-                            if (priceDropped > 0) {
-                                Text(
-                                    text = "Save ₹${priceDropped.toInt()}",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.Medium
-                                )
+                                if (priceDropped > 0) {
+                                    Text(
+                                        text = "Save ₹${priceDropped.toInt()}",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
                             }
                         }
                     }
@@ -197,3 +198,4 @@ fun PriceComparisonCard(
         }
     }
 }
+
