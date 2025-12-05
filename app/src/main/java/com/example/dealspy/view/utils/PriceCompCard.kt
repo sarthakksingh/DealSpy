@@ -115,7 +115,7 @@ fun PriceComparisonCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = product.price?:"Not Found",
+                        text = "₹${product.price ?: 0.0}",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = if (isLowestPrice) MaterialTheme.colorScheme.primary
@@ -130,6 +130,38 @@ fun PriceComparisonCard(
                             textDecoration = TextDecoration.LineThrough,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                    }
+                }
+
+                // Show discount if available
+                product.getDiscountPercentage()?.let { discount ->
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = discount,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.error,
+                            fontWeight = FontWeight.Medium
+                        )
+
+                        product.lastKnownPrice?.let { lastPrice ->
+                            val currentPrice = product.price
+                            if (currentPrice != null) {
+                                val priceDropped = lastPrice - currentPrice
+
+                                if (priceDropped > 0) {
+                                    Text(
+                                        text = "Save ₹${priceDropped.toInt()}",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -166,3 +198,4 @@ fun PriceComparisonCard(
         }
     }
 }
+

@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.repo.SaveForLaterRepo
+import com.example.dealspy.data.repo.SaveForLaterRepository
 import com.example.dealspy.data.repo.UserRepo
 import com.example.dealspy.ui.state.UiState
 import com.google.firebase.auth.FirebaseAuth
@@ -18,7 +18,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val saveForLaterRepo: SaveForLaterRepo,
+    private val saveForLaterRepository: SaveForLaterRepository,
     private val userRepository: UserRepo,
     private val auth: FirebaseAuth
 ) : ViewModel() {
@@ -38,6 +38,8 @@ class ProfileViewModel @Inject constructor(
             try {
                 _wishlist.value = UiState.Loading
                 Log.d("ProfileViewModel", "Loading wishlist (save for later)...")
+                val response = saveForLaterRepository.getSaveForLater()
+                if (response.success && response.data != null) {
                 val response = saveForLaterRepo.getSaveForLater()
                 if (response.success == true && response.data != null) {
                     Log.d("ProfileViewModel", "Wishlist loaded: ${response.data.size} items")
@@ -85,7 +87,7 @@ class ProfileViewModel @Inject constructor(
                 _deleteUserState.value = UiState.Loading
                 Log.d("ProfileViewModel", "Attempting to delete user account")
                 val response = userRepository.deleteUser()
-                if (response.success == true) {
+                if (response.success) {
                     Log.d("ProfileViewModel", "Account deleted successfully")
                     _deleteUserState.value = UiState.Success(response.message ?: "Account deleted successfully")
                 } else {
