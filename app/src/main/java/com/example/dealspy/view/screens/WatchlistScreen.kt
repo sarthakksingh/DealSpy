@@ -1,5 +1,6 @@
 package com.example.dealspy.view.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +15,6 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -32,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -41,6 +42,7 @@ import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
+import com.example.dealspy.view.utils.ShimmerDealCard
 import com.example.dealspy.view.utils.WatchCard
 import com.example.dealspy.vm.WatchListViewModel
 
@@ -52,7 +54,7 @@ fun WatchlistScreen(
 ) {
     val watchListState by viewModel.watchlist.collectAsState()
     val pullToRefreshState = rememberPullToRefreshState()
-
+    val context = LocalContext.current
     val isApiLoading = watchListState is UiState.Loading
     var isPulling by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -67,10 +69,7 @@ fun WatchlistScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
-            AppTopBar(
-                title = "Watchlist",
-                navController = navController
-            )
+            AppTopBar(title = "Watchlist", navController = navController)
         },
         bottomBar = {
             BottomNavBar(
@@ -112,18 +111,16 @@ fun WatchlistScreen(
                 onRetry = { viewModel.getWatchlistProducts() },
                 onIdle = {
                     if (isApiLoading) {
-                        Box(
+                        // Show shimmer placeholders instead of CircularProgressIndicator
+                        Column(
                             modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
+                            verticalArrangement = Arrangement.Top,
+                            horizontalAlignment = Alignment.CenterHorizontally,
                         ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                CircularProgressIndicator()
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = if (isPulling) "Refreshing..." else "Loading watchlist...",
-                                    style = MaterialTheme.typography.bodyMedium
+                            repeat(4) {
+                                ShimmerDealCard(
+                                    isLoading = true,
+                                    contentAfterLoading = {}
                                 )
                             }
                         }
@@ -154,11 +151,13 @@ fun WatchlistScreen(
                         ) {
                             items(
                                 items = products,
-                                key = { it.id ?: it.name }
+                                key = { it.id ?: it.name ?: "Null" }
                             ) { product ->
                                 WatchCard(
+                                    context =context,
                                     product = product,
                                     onDelete = {
+                                        Log.d("WatchlistScreen", "✅ onDelete CLICKED for ${product.name}")
                                         productToDelete = product
                                         showDeleteDialog = true
                                     }
@@ -171,7 +170,7 @@ fun WatchlistScreen(
         }
     }
 
-    // Delete Confirmation Dialog
+    // Delete Confirmation Dialog remains unchanged
     if (showDeleteDialog && productToDelete != null) {
         AlertDialog(
             onDismissRequest = {
@@ -190,7 +189,9 @@ fun WatchlistScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        productToDelete?.id?.let {
+                        Log.d("WatchlistScreen", "✅ REMOVE BUTTON CLICKED for ${productToDelete?.name}")
+                        productToDelete?.name?.let {
+                            Log.d("WatchlistScreen", "✅ CALLING ViewModel.removeFromWatchlist($it)")
                             viewModel.removeFromWatchlist(it)
                         }
                         showDeleteDialog = false

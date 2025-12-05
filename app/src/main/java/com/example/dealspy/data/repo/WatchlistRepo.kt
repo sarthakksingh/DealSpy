@@ -10,7 +10,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WatchlistRepository @Inject constructor(
+class WatchlistRepo @Inject constructor(
     private val watchlistApi: WatchlistApi,
     private val auth: FirebaseAuth
 ) {
@@ -25,10 +25,10 @@ class WatchlistRepository @Inject constructor(
     suspend fun getWatchlist(): CustomResponse<List<Product>> {
         return try {
             val token = getAuthToken()
-            Log.d("WatchlistRepository", "Fetching watchlist...")
+            Log.d("WatchlistRepo", "Fetching watchlist...")
             watchlistApi.getWatchlist(token)
         } catch (e: Exception) {
-            Log.e("WatchlistRepository", "Failed to get watchlist", e)
+            Log.e("WatchlistRepo", "Failed to get watchlist", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to fetch watchlist",
@@ -40,10 +40,10 @@ class WatchlistRepository @Inject constructor(
     suspend fun addToWatchlist(product: Product): CustomResponse<Product> {
         return try {
             val token = getAuthToken()
-            Log.d("WatchlistRepository", "Adding to watchlist: ${product.name}")
+            Log.d("WatchlistRepo", "Adding to watchlist: ${product.name}")
             watchlistApi.postWatchlist(product, token)
         } catch (e: Exception) {
-            Log.e("WatchlistRepository", "Failed to add to watchlist", e)
+            Log.e("WatchlistRepo", "Failed to add to watchlist", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to add to watchlist",
@@ -55,10 +55,10 @@ class WatchlistRepository @Inject constructor(
     suspend fun removeFromWatchlist(productName: String): CustomResponse<Unit> {
         return try {
             val token = getAuthToken()
-            Log.d("WatchlistRepository", "Removing from watchlist: $productName")
+            Log.d("WatchlistRepo", "Removing from watchlist: $productName")
             watchlistApi.deleteWatchListItem(productName, token)
         } catch (e: Exception) {
-            Log.e("WatchlistRepository", "Failed to remove from watchlist", e)
+            Log.e("WatchlistRepo", "Failed to remove from watchlist", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to remove from watchlist",
@@ -70,10 +70,10 @@ class WatchlistRepository @Inject constructor(
     suspend fun clearAllWatchlist(): CustomResponse<Unit> {
         return try {
             val token = getAuthToken()
-            Log.d("WatchlistRepository", "Clearing all watchlist items...")
+            Log.d("WatchlistRepo", "Clearing all watchlist items...")
             watchlistApi.clearAllWatchlist(token)
         } catch (e: Exception) {
-            Log.e("WatchlistRepository", "Failed to clear watchlist", e)
+            Log.e("WatchlistRepo", "Failed to clear watchlist", e)
             CustomResponse(
                 success = false,
                 message = e.message ?: "Failed to clear watchlist",

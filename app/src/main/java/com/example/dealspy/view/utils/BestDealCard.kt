@@ -72,7 +72,7 @@ fun BestDealCard(product: Product) {
                 )
 
                 Text(
-                    text = product.name,
+                    text = product.name?:"Unknown",
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Bold

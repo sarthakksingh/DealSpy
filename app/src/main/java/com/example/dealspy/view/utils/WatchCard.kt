@@ -1,5 +1,8 @@
 package com.example.dealspy.view.utils
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -33,13 +36,17 @@ import com.example.dealspy.data.model.Product
 
 @Composable
 fun WatchCard(
+    context: Context,
     product: Product,
     onDelete: () -> Unit
 ) {
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(240.dp),
+            .height(240.dp).clickable{
+                openDeepLink(url= product.deepLink, context = context)
+            },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -72,7 +79,7 @@ fun WatchCard(
                         .padding(8.dp)
                 ) {
                     Text(
-                        text = product.name,
+                        text = product.name?:"Unknown",
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 2,
@@ -82,7 +89,7 @@ fun WatchCard(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = product.platformName,
+                        text = product.platformName?:"Unknown",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -128,5 +135,14 @@ fun WatchCard(
                 )
             }
         }
+    }
+}
+fun openDeepLink(context: Context, url: String) {
+    try {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }

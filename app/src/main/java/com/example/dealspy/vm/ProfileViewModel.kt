@@ -40,6 +40,8 @@ class ProfileViewModel @Inject constructor(
                 Log.d("ProfileViewModel", "Loading wishlist (save for later)...")
                 val response = saveForLaterRepository.getSaveForLater()
                 if (response.success && response.data != null) {
+                val response = saveForLaterRepo.getSaveForLater()
+                if (response.success == true && response.data != null) {
                     Log.d("ProfileViewModel", "Wishlist loaded: ${response.data.size} items")
                     _wishlist.value = if (response.data.isEmpty()) {
                         UiState.NoData
@@ -66,8 +68,8 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 Log.d("ProfileViewModel", "Removing from wishlist: $productName")
-                val response = saveForLaterRepository.removeFromSaveForLater(productName)
-                if (response.success) {
+                val response = saveForLaterRepo.removeFromSaveForLater(productName)
+                if (response.success == true) {
                     Log.d("ProfileViewModel", "Successfully removed from wishlist")
                     getWishlistProducts()
                 } else {

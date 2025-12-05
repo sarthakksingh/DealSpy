@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.annotation.RequiresExtension
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.dealspy.data.model.Product
 import com.example.dealspy.data.model.SearchCategory
 import com.example.dealspy.ui.state.UiState
 import com.example.dealspy.ui.state.UiStateHandler
@@ -127,12 +130,20 @@ fun SearchScreen(
         }
     }
 
+    LaunchedEffect(searchListState) {
+        if (searchListState is UiState.Error) {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = (searchListState as UiState.Error).message ?: "Search failed",
+                    duration = SnackbarDuration.Short
+                )
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
-            AppTopBar(
-                title = "Search",
-                navController = navController
-            )
+            AppTopBar(title = "Search", navController = navController)
         },
         bottomBar = {
             BottomNavBar(
@@ -140,9 +151,7 @@ fun SearchScreen(
                 bottomMenu = BottomNavOptions.bottomNavOptions
             )
         },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
@@ -150,29 +159,29 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
-                .background(MaterialTheme.colorScheme.background)
         ) {
-            // Search TextField
+            // Search TextField - SEARCH ONLY ON ICON CLICK
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                placeholder = {
-                    Text(
-                        "Search for products...",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                },
+                placeholder = { Text("Search for products...", style = MaterialTheme.typography.bodyMedium) },
                 trailingIcon = {
-                    IconButton(
-                        modifier = Modifier.padding(8.dp),
-                        onClick = {
-                            if (query.isNotBlank()) {
-                                searchViewModel.searchProductList(query)
-                                keyboardController?.hide()
+                    Row {
+                        if (query.isNotBlank()) {
+                            IconButton(onClick = {
+                                query = ""
+                            }) {
+                                Icon(Icons.Default.Clear, "Clear")
                             }
                         }
-                    ) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+                        IconButton(onClick = {
+                            if (query.isNotBlank()) {
+                                searchViewModel.searchProductList(query)  // ✅ API call ONLY here
+                                keyboardController?.hide()
+                            }
+                        }) {
+                            Icon(Icons.Default.Search, "Search")
+                        }
                     }
                 },
                 singleLine = true,
@@ -181,8 +190,9 @@ fun SearchScreen(
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
                     cursorColor = MaterialTheme.colorScheme.primary
                 ),
+                // ✅ REMOVED onSearch - no auto search on keyboard
                 keyboardActions = KeyboardActions(
-                    onSearch = {
+                    onDone = {
                         if (query.isNotBlank()) {
                             searchViewModel.searchProductList(query)
                             keyboardController?.hide()
@@ -193,39 +203,67 @@ fun SearchScreen(
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Show popular categories or search results
-            if (query.isBlank()) {
-                PopularCategorySection(
-                    categories = popularCategories,
-                    onCategoryClick = { category ->
-                        query = category
-                        searchViewModel.searchProductList(category)
+            when {
+                query.isBlank() -> {
+                    // Show popular categories when no query
+                    PopularCategorySection(
+                        categories = popularCategories,
+                        onCategoryClick = { category ->
+                            query = category  // ✅ Fixed: use category.name
+                            searchViewModel.searchProductList(category)
+                        }
+                    )
+                }
+
+                searchListState is UiState.Loading -> {
+                    // ✅ SHIMMER during loading
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Searching for \"$query\"...",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(16.dp)
+                        )
+
+                        LazyColumn {
+                            items(count = 6) {
+                                ShimmerSearchResultCard(
+                                    isLoading = true,
+                                    contentAfterLoading = {},
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp)
+                                )
+                            }
+                        }
                     }
-                )
-            } else {
-                // Search Results
-                UiStateHandler(
-                    state = searchListState,
-                    modifier = Modifier.fillMaxSize(),
-                    onRetry = { searchViewModel.searchProductList(query) },
-                    onSuccess = { products ->
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Showing results for \"$query\"",
-                                style = MaterialTheme.typography.titleSmall,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(8.dp)
-                            )
+                }
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                searchListState is UiState.Success -> {
+                    val products = (searchListState as UiState.Success<List<Product>>).data
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = if (products.isEmpty()) {
+                                "No results found for \"$query\""
+                            } else {
+                                "Showing ${products.size} results for \"$query\""
+                            },
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(16.dp)
+                        )
 
+                        if (products.isNotEmpty()) {
                             LazyColumn {
-                                items(products) { product ->
+                                items(products, key = { it.id ?: it.name ?: it.hashCode().toString() }) { product ->
                                     ShimmerSearchResultCard(
-                                        isLoading = false,
+                                        isLoading = false,  // ✅ Show real content
                                         contentAfterLoading = {
                                             SearchResultCard(
                                                 product = product,
@@ -247,7 +285,21 @@ fun SearchScreen(
                             }
                         }
                     }
-                )
+                }
+
+                else -> {
+                    // Initial state or error - show minimal shimmer
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Enter search query above",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(32.dp)
+                        )
+                    }
+                }
             }
         }
     }

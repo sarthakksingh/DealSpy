@@ -102,7 +102,7 @@ fun PriceComparisonCard(
                 }
 
                 Text(
-                    text = product.platformName,
+                    text = product.platformName?:"Unknown",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,

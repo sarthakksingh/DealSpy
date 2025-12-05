@@ -7,13 +7,13 @@ data class Product(
     val id: String? = null,
 
     @SerializedName("productName")
-    val name: String,
+    val name: String?=null,
 
     @SerializedName("brand")
     val brand: String? = null,
 
     @SerializedName("platform")
-    val platformName: String,
+    val platformName: String?=null,
 
     @SerializedName("price")
     val price: Double? = null,

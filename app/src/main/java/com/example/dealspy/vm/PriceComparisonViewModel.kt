@@ -1,12 +1,10 @@
 package com.example.dealspy.vm
 
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresExtension
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dealspy.data.model.Product
-import com.example.dealspy.data.repo.GeminiService
+import com.example.dealspy.data.repo.SearchRepo
 import com.example.dealspy.ui.state.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,28 +12,32 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 import javax.inject.Inject
-
 @HiltViewModel
 class PriceComparisonViewModel @Inject constructor(
-    private val geminiService: GeminiService
+    private val searchRepo: SearchRepo
 ) : ViewModel() {
 
     private val _priceComparisonState = MutableStateFlow<UiState<List<Product>>>(UiState.Idle)
     val priceComparisonState = _priceComparisonState.asStateFlow()
 
-    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     fun loadPriceComparison(productName: String) {
         viewModelScope.launch {
             try {
                 _priceComparisonState.value = UiState.Loading
                 Log.d("PriceComparisonViewModel", "Loading price comparison for: $productName")
 
-                val response = geminiService.generatePriceComparison(productName)
+                val response = searchRepo.searchProducts(productName)
 
-                if (response.isEmpty()) {
-                    _priceComparisonState.value = UiState.NoData
+                if (response.success && response.data != null) {  // ← Fixed: direct data access
+                    val products = response.data  // ← Fixed: no .products
+                    _priceComparisonState.value = if (products.isEmpty()) {
+                        UiState.NoData
+                    } else {
+                        UiState.Success(products)
+                    }
+                    Log.d("PriceComparisonViewModel", "Found ${products.size} products for comparison")
                 } else {
-                    _priceComparisonState.value = UiState.Success(response)
+                    _priceComparisonState.value = UiState.Error(response.message ?: "No products found")
                 }
 
             } catch (e: UnknownHostException) {
@@ -51,7 +53,6 @@ class PriceComparisonViewModel @Inject constructor(
         }
     }
 
-    @RequiresExtension(extension = Build.VERSION_CODES.S, version = 7)
     fun refresh(productName: String) {
         loadPriceComparison(productName)
     }
