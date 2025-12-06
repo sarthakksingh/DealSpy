@@ -97,7 +97,7 @@ fun WatchCard(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = product.price?:"Not Found",
+                        text = "₹${product.price ?: 0.0}",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.primary

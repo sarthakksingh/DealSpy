@@ -154,7 +154,7 @@ fun SearchResultCardPreview() {
     val dummyProduct = Product(
         name = "iPhone 15 Pro Max",
         platformName = "Amazon",
-        price = "₹134,900",
+        price = 134900.0,
         lastKnownPrice = 149900.0,
         deepLink = "https://amazon.in/iphone",
         imageUrl = "https://images.unsplash.com/photo-1592750475338-74b7b21085ab"

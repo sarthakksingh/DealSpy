@@ -86,7 +86,7 @@ fun BestDealCard(product: Product) {
                     )
 
                     Text(
-                        product.price?:"0",
+                        text = "₹${product.price?.toInt() ?: 0}",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.tertiary,
                         fontWeight = FontWeight.Bold

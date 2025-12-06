@@ -290,7 +290,20 @@ fun ProfileScreen(
                         val options = listOf(
                             ThemeSelection.Theme1 to "Stellar Navy",
                             ThemeSelection.Theme2 to "Urban Ember",
-                            ThemeSelection.Theme14 to "Dusk Platinum"
+                            ThemeSelection.Theme3 to "Aqua Zenith",
+                            ThemeSelection.Theme4 to "Obsidian Whisper",
+                            ThemeSelection.Theme14 to "Dusk Platinum",
+                            ThemeSelection.Theme15 to "Graphite Noir",
+                            ThemeSelection.Theme16 to "Midnight Serene",
+                            ThemeSelection.Theme17 to "Rich Umber",
+                            ThemeSelection.Theme18 to "Deep Forest Whisper",
+                            ThemeSelection.Theme5 to "Veridian Depth",
+                            ThemeSelection.Theme6 to "Neon Dusk",
+                            ThemeSelection.Theme6 to "Neon Dusk",
+                            ThemeSelection.Theme10 to "Midnight Bloom",//logout button
+                            ThemeSelection.Theme11 to "Charcoal Horizon",
+                            ThemeSelection.Theme12 to "Nightfall Velvet",
+                            ThemeSelection.Theme8 to "Lunar Dust"
                         )
 
                         options.forEach { (value, label) ->
