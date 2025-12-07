@@ -28,11 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.example.dealspy.R
 import com.example.dealspy.data.model.Product
 
 @Composable
@@ -68,16 +70,6 @@ fun SearchResultCard(
                     contentScale = ContentScale.Crop
                 )
 
-                Icon(
-                    imageVector = if (isSaved) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = "Save for Later",
-                    tint = if (isSaved) Color(0xFFFF4081) else Color.Gray,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(4.dp)
-                        .clickable { onToggleSave(product) }
-                        .size(20.dp)
-                )
             }
 
             Spacer(modifier = Modifier.width(12.dp))
@@ -127,6 +119,16 @@ fun SearchResultCard(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.End
         ) {
+            Icon(
+                painter =  painterResource(id = R.drawable.bookmark),
+                contentDescription = "Save for Later",
+                tint = if (isSaved) Color(0xFFFF4081) else Color.Gray,
+                modifier = Modifier
+                    .padding(4.dp)
+                    .clickable { onToggleSave(product) }
+                    .size(30.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
             Button(
                 onClick = { onAddToWatch(product) },
                 modifier = Modifier
@@ -139,11 +141,13 @@ fun SearchResultCard(
                 )
             ) {
                 Text(
-                    "Add to Watchlist",
+                    text="Add to Watch",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.White
+                    color = Color.White,
+                    maxLines = 1,
                 )
             }
+
         }
     }
 }

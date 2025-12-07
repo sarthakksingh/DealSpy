@@ -61,7 +61,9 @@ import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.WishlistCard
 import com.example.dealspy.vm.ProfileViewModel
+import com.example.dealspy.vm.SearchViewModel
 import com.example.dealspy.vm.ThemeViewModel
+import com.example.dealspy.vm.WatchListViewModel
 import com.google.firebase.auth.FirebaseAuth
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,9 +71,11 @@ import com.google.firebase.auth.FirebaseAuth
 fun ProfileScreen(
     navController: NavController,
     onLogout: () -> Unit,
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
+    watchListViewModel: WatchListViewModel = hiltViewModel(),
 ) {
     val wishlistState by viewModel.wishlist.collectAsState()
+    val addToWatchlistState by watchListViewModel.addToWatchlistState.collectAsState()
     val context = LocalContext.current
     var notificationsEnabled by remember { mutableStateOf(true) }
 
@@ -114,7 +118,25 @@ fun ProfileScreen(
             else -> { /* Idle or Loading */ }
         }
     }
-
+    LaunchedEffect(addToWatchlistState) {
+        when (addToWatchlistState) {
+            is UiState.Success -> {
+                Toast.makeText(context, "Added to Watchlist!", Toast.LENGTH_SHORT).show()
+                watchListViewModel.resetAddState()
+            }
+            is UiState.Error -> {
+                Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
+                watchListViewModel.resetAddState()
+            }
+            is UiState.NoInternet -> {
+                Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show()
+                watchListViewModel.resetAddState()
+            }
+            else -> {
+                // Idle or Loading -> no toast
+            }
+        }
+    }
     Scaffold(
         topBar = {
             AppTopBar(
@@ -215,8 +237,7 @@ fun ProfileScreen(
                     } else {
                         LazyRow(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
+                                .fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(
@@ -224,9 +245,10 @@ fun ProfileScreen(
                                 key = { it.name?:"Unknown" }
                             ) { product ->
                                 WishlistCard(
+                                    context =context,
                                     product = product,
                                     onDelete = { viewModel.removeFromWishlist(product.name?:"Unknown")},
-                                        onAddToWatchlist = {}
+                                    onAddToWatchlist = {watchListViewModel.addToWatchlist( product)}
 
                                 )
                             }

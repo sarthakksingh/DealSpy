@@ -67,8 +67,8 @@ class WatchListViewModel @Inject constructor(
                 Log.d("WatchListViewModel", "Adding to watchlist: ${product.name}")
                 val response = watchlistRepo.addToWatchlist(product)
                 if (response.success) {
-                    Log.d("WatchListViewModel", "Added to watchlist successfully")
                     _addToWatchlistState.value = UiState.Success("Added to watchlist!")
+                    Log.d("WatchListViewModel", "Added to watchlist successfully")
                     getWatchlistProducts()
                 } else {
                     _addToWatchlistState.value = UiState.Error(response.message ?: "Failed to add to watchlist")
