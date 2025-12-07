@@ -24,6 +24,8 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.net.SocketTimeoutException
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -73,6 +75,12 @@ object AppModule {
     @Singleton
     fun provideOkHttpClient(): OkHttpClient {
         return OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)      // Render cold starts
+            .readTimeout(90, TimeUnit.SECONDS)         // 1.5min for Tavily scraping
+            .writeTimeout(60, TimeUnit.SECONDS)        // POST requests
+            .callTimeout(120, TimeUnit.SECONDS)        // 2min TOTAL timeout
+
+            // Logging
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
                     level = if (BuildConfig.DEBUG) {
@@ -82,8 +90,20 @@ object AppModule {
                     }
                 }
             )
+
+            // Custom timeout handling
+            .addInterceptor { chain ->
+                try {
+                    val response = chain.proceed(chain.request())
+                    // Don't close slow responses prematurely
+                    response
+                } catch (e: SocketTimeoutException) {
+                    throw RuntimeException("Search taking longer than 2 minutes - try shorter query", e)
+                }
+            }
             .build()
     }
+
 
 
     @Provides
