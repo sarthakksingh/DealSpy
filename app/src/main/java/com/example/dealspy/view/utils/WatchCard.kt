@@ -2,20 +2,22 @@ package com.example.dealspy.view.utils
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -28,10 +30,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import coil.compose.AsyncImage
+import com.example.dealspy.R
 import com.example.dealspy.data.model.Product
 
 @Composable
@@ -44,40 +52,34 @@ fun WatchCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(240.dp).clickable{
+            .clickable{
                 openDeepLink(url= product.deepLink, context = context)
             },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainer
+            containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.cardElevation(2.dp)
+        elevation = CardDefaults.cardElevation(8.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                // Image
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(140.dp)
-                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    AsyncImage(
-                        model = product.imageUrl,
-                        contentDescription = product.name,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
-                        contentScale = ContentScale.Crop
-                    )
-                }
+        Box {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(10.dp)
+            ){
 
-                // Product Info
-                Column(
+                AsyncImage(
+                    model = product.imageUrl,
+                    contentDescription = product.name,
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
+                        .height(120.dp)
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
+
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = product.name?:"Unknown",
                         style = MaterialTheme.typography.labelLarge,
@@ -86,7 +88,7 @@ fun WatchCard(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
                         text = product.platformName?:"Unknown",
@@ -95,15 +97,15 @@ fun WatchCard(
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
-
+                Row {
                     Text(
-                        text = "₹${product.price ?: 0.0}",
-                        style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary
+                        text = "₹${product.lastKnownPrice}",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            textDecoration = TextDecoration.LineThrough,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     )
-
-                    // Show discount if available
+                    Spacer(modifier = Modifier.width(6.dp))
                     product.getDiscountPercentage()?.let {
                         Text(
                             text = it,
@@ -112,37 +114,87 @@ fun WatchCard(
                             fontWeight = FontWeight.Bold
                         )
                     }
-                }
-            }
-
-            // Delete Button
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(4.dp)
-                    .size(28.dp)
-                    .background(
-                        color = Color.Red.copy(alpha = 0.8f),
-                        shape = RoundedCornerShape(50)
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "₹${product.price ?: 0.0}",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
                     )
+                    Spacer(modifier = Modifier.width(6.dp))
+
+                    Button(
+                        onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, product.deepLink.toUri())
+                            context.startActivity(intent)
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                        shape = RoundedCornerShape(50)
+                    ) {
+                        Text("BUY NOW", color = MaterialTheme.colorScheme.onSurface)
+                    }
+
+
+                }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(6.dp),
+                contentAlignment = Alignment.TopEnd
             ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Delete",
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier
+                        //.align(Alignment.TopEnd)
+                        .padding(4.dp)
+                        .size(28.dp)
+
+                ) {
+                    Icon(
+                        painter =  painterResource(id = R.drawable.cross),
+                        contentDescription = "Delete",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
             }
         }
+
     }
 }
+
 fun openDeepLink(context: Context, url: String) {
     try {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
     } catch (e: Exception) {
         e.printStackTrace()
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun WatchCardPreview() {
+    val context = LocalContext.current
+    val sampleProduct = Product(
+        id = "1",
+        name = "Sample Product",
+        brand = "Sample Brand",
+        platformName = "Amazon",
+        price = 49999.0,
+        lastKnownPrice = 54999.0,
+        deepLink = "https://www.example.com",
+        imageUrl = "https://via.placeholder.com/300"
+    )
+
+    WatchCard(
+        context = context,
+        product = sampleProduct,
+        onDelete = {}
+    )
 }

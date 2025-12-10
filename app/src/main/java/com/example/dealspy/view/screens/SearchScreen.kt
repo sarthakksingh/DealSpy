@@ -52,6 +52,7 @@ import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
 import com.example.dealspy.view.utils.PopularCategorySection
+import com.example.dealspy.view.utils.SearchBar
 import com.example.dealspy.view.utils.SearchResultCard
 import com.example.dealspy.view.utils.ShimmerSearchResultCard
 import com.example.dealspy.vm.SearchViewModel
@@ -109,21 +110,11 @@ fun SearchScreen(
     LaunchedEffect(addToWatchlistState) {
         when (addToWatchlistState) {
             is UiState.Success -> {
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "Added to watchlist!",
-                        duration = SnackbarDuration.Short
-                    )
-                }
+                Toast.makeText(context, "Added to Watchlist!", Toast.LENGTH_SHORT).show()
                 watchListViewModel.resetAddState()
             }
             is UiState.Error -> {
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "Failed to add to watchlist",
-                        duration = SnackbarDuration.Long
-                    )
-                }
+                Toast.makeText(context, "Failed", Toast.LENGTH_SHORT).show()
                 watchListViewModel.resetAddState()
             }
             else -> {}
@@ -134,7 +125,7 @@ fun SearchScreen(
         if (searchListState is UiState.Error) {
             coroutineScope.launch {
                 snackbarHostState.showSnackbar(
-                    message = (searchListState as UiState.Error).message ?: "Search failed",
+                    message = (searchListState as UiState.Error).message,
                     duration = SnackbarDuration.Short
                 )
             }
@@ -160,63 +151,33 @@ fun SearchScreen(
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            // Search TextField - SEARCH ONLY ON ICON CLICK
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
-                placeholder = { Text("Search for products...", style = MaterialTheme.typography.bodyMedium) },
-                trailingIcon = {
-                    Row {
-                        if (query.isNotBlank()) {
-                            IconButton(onClick = {
-                                query = ""
-                            }) {
-                                Icon(Icons.Default.Clear, "Clear")
-                            }
-                        }
-                        IconButton(onClick = {
-                            if (query.isNotBlank()) {
-                                searchViewModel.searchProductList(query)  // ✅ API call ONLY here
-                                keyboardController?.hide()
-                            }
-                        }) {
-                            Icon(Icons.Default.Search, "Search")
-                        }
-                    }
-                },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    cursorColor = MaterialTheme.colorScheme.primary
-                ),
-                // ✅ REMOVED onSearch - no auto search on keyboard
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        if (query.isNotBlank()) {
-                            searchViewModel.searchProductList(query)
-                            keyboardController?.hide()
-                        }
-                    }
-                )
-            )
+            SearchBar(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) { text ->
+                query = text.trim()
+                if (query.isNotEmpty()) {
+                    keyboardController?.hide()
+                    searchViewModel.searchProductList(query)
+                }
+            }
 
             Spacer(modifier = Modifier.height(28.dp))
 
             when {
                 query.isBlank() -> {
-                    // Show popular categories when no query
                     PopularCategorySection(
                         categories = popularCategories,
                         onCategoryClick = { category ->
-                            query = category  // ✅ Fixed: use category.name
+                            query = category
                             searchViewModel.searchProductList(category)
                         }
                     )
                 }
 
                 searchListState is UiState.Loading -> {
-                    // ✅ SHIMMER during loading
+
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally

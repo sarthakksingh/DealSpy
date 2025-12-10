@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -98,7 +96,7 @@ fun WatchlistScreen(
                     ) {
                         PullToRefreshDefaults.Indicator(
                             state = pullToRefreshState,
-                            isRefreshing = isRefreshing,
+                            isRefreshing = false,
                             modifier = Modifier
                         )
                     }
@@ -111,7 +109,6 @@ fun WatchlistScreen(
                 onRetry = { viewModel.getWatchlistProducts() },
                 onIdle = {
                     if (isApiLoading) {
-                        // Show shimmer placeholders instead of CircularProgressIndicator
                         Column(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.Top,
@@ -170,7 +167,7 @@ fun WatchlistScreen(
         }
     }
 
-    // Delete Confirmation Dialog remains unchanged
+
     if (showDeleteDialog && productToDelete != null) {
         AlertDialog(
             onDismissRequest = {
