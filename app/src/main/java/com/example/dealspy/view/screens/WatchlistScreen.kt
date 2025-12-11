@@ -148,7 +148,7 @@ fun WatchlistScreen(
                         ) {
                             items(
                                 items = products,
-                                key = { it.id ?: it.name ?: "Null" }
+                                key = { it.name ?: "Null" }
                             ) { product ->
                                 WatchCard(
                                     context =context,

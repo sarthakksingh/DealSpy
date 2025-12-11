@@ -2,24 +2,19 @@ package com.example.dealspy.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Product(
-    @SerializedName("id")
-    val id: String? = null,
 
+data class Product(
     @SerializedName("productName")
-    val name: String?=null,
+    val name: String? = null,
 
     @SerializedName("brand")
     val brand: String? = null,
 
     @SerializedName("platform")
-    val platformName: String?=null,
+    val platformName: String? = null,
 
-    @SerializedName("price")
+    @SerializedName(value = "price", alternate = ["current_price"])
     val price: Double? = null,
-
-//    @SerializedName("priceValue")
-//    val priceValue: Double? = null,
 
     @SerializedName("lastKnownPrice")
     val lastKnownPrice: Double? = null,
@@ -29,7 +24,8 @@ data class Product(
 
     @SerializedName("imageUrl")
     val imageUrl: String? = null
-) {
+)
+{
     fun getDiscountPercentage(): String? {
         val currentPrice = price
         return if (lastKnownPrice != null && lastKnownPrice > 0 && currentPrice != null && currentPrice > 0) {

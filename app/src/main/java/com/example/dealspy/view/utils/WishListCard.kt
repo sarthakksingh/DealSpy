@@ -158,28 +158,3 @@ fun WishlistCard(
 
     }
 }
-
-
-@Preview(showBackground = true)
-@Composable
-fun WishlistCardPreview() {
-    val context = LocalContext.current
-    val sampleProduct = Product(
-        id = "1",
-        name = "Sample Wishlist Product",
-        brand = "Sample Brand",
-        platformName = "Amazon",
-        price = 1999.0,
-        lastKnownPrice = 2499.0,
-        deepLink = "https://www.example.com",
-        imageUrl = "https://via.placeholder.com/300"
-    )
-
-    WishlistCard(
-        context= context,
-        product = sampleProduct,
-        onDelete = {},
-        onAddToWatchlist = {}
-
-    )
-}
