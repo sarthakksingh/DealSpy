@@ -176,25 +176,3 @@ fun openDeepLink(context: Context, url: String) {
         e.printStackTrace()
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun WatchCardPreview() {
-    val context = LocalContext.current
-    val sampleProduct = Product(
-        id = "1",
-        name = "Sample Product",
-        brand = "Sample Brand",
-        platformName = "Amazon",
-        price = 49999.0,
-        lastKnownPrice = 54999.0,
-        deepLink = "https://www.example.com",
-        imageUrl = "https://via.placeholder.com/300"
-    )
-
-    WatchCard(
-        context = context,
-        product = sampleProduct,
-        onDelete = {}
-    )
-}

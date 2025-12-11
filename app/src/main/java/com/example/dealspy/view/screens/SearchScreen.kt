@@ -222,7 +222,7 @@ fun SearchScreen(
 
                         if (products.isNotEmpty()) {
                             LazyColumn {
-                                items(products, key = { it.id ?: it.name ?: it.hashCode().toString() }) { product ->
+                                items(products) { product ->
                                     ShimmerSearchResultCard(
                                         isLoading = false,  // ✅ Show real content
                                         contentAfterLoading = {
