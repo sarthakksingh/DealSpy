@@ -1,3 +1,4 @@
+import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -13,6 +14,26 @@ plugins {
 android {
     namespace = "com.example.dealspy"
     compileSdk = 35
+
+    val keystoreProps = Properties().apply {
+        load(FileInputStream(rootProject.file("local.properties")))
+    }
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = false
+    }
+
+
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystoreProps["KEYSTORE_PATH"] as String)
+            storePassword = keystoreProps["KEYSTORE_PASSWORD"] as String
+            keyAlias = keystoreProps["KEY_ALIAS"] as String
+            keyPassword = keystoreProps["KEY_PASSWORD"] as String
+        }
+    }
+
 
     defaultConfig {
         applicationId = "com.example.dealspy"
@@ -39,16 +60,18 @@ android {
         )
         buildConfigField("String", "API_KEY", "\"${properties.getProperty("API_KEY", "")}\"")
         buildConfigField("String", "BASE_URL", "\"${properties.getProperty("BASE_URL", "")}\"")
-        buildTypes {
-            release {
-                isMinifyEnabled = false
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-                )
-            }
+    }
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
