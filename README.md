@@ -94,7 +94,6 @@ The UI is built with **Jetpack Compose** and follows a modern, dark-themed desig
 |--------|----------------|
 | ![](screenshots/profile.jpeg) | ![](screenshots/theme.jpeg) |
 
-> *(Add the screenshots inside a `/screenshots` folder and rename accordingly)*
 
 ---
 
