@@ -83,13 +83,6 @@ fun SearchBar(
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
 
                 Box(
                     modifier = Modifier

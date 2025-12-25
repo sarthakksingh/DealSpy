@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,6 +60,7 @@ import com.example.dealspy.ui.theme.ThemeSelection
 import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
+import com.example.dealspy.view.utils.ShimmerWishlistCard
 import com.example.dealspy.view.utils.WishlistCard
 import com.example.dealspy.vm.ProfileViewModel
 import com.example.dealspy.vm.SearchViewModel
@@ -216,13 +218,18 @@ fun ProfileScreen(
 
             when (wishlistState) {
                 is UiState.Loading -> {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(100.dp),
-                        contentAlignment = Alignment.Center
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(horizontal = 8.dp)
                     ) {
-                        CircularProgressIndicator()
+                        items(count = 4) {
+                            ShimmerWishlistCard(
+                                isLoading = true,
+                                contentAfterLoading = {},
+                                modifier = Modifier.width(150.dp)
+                            )
+                        }
                     }
                 }
                 is UiState.Success -> {
