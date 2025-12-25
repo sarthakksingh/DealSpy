@@ -86,13 +86,15 @@ The UI is built with **Jetpack Compose** and follows a modern, dark-themed desig
 
 ## 📸 Screenshots
 
-| Search | Watchlist |
-|------|----------|
-| ![](screenshots/search.jpeg) | ![](screenshots/watchlist.jpeg) |
+<p align="center">
+  <img src="screenshots/search.jpeg" width="45%" />
+  <img src="screenshots/watchlist.jpeg" width="45%" />
+</p>
 
-| Profile | Theme Selector |
-|--------|----------------|
-| ![](screenshots/profile.jpeg) | ![](screenshots/theme.jpeg) |
+<p align="center">
+  <img src="screenshots/profile.jpeg" width="45%" />
+  <img src="screenshots/theme.jpeg" width="45%" />
+</p>
 
 
 ---
@@ -101,7 +103,7 @@ The UI is built with **Jetpack Compose** and follows a modern, dark-themed desig
 
 You can download the demo APK from **GitHub Releases**:
 
-👉 **[Download DealSpy Demo APK](https://github.com/<your-username>/<repo-name>/releases)**
+👉 **[Download DealSpy Demo APK](https://github.com/sarthakksingh/DealSpy/releases)**
 
 ---
 
