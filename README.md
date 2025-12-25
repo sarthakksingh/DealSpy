@@ -88,11 +88,11 @@ The UI is built with **Jetpack Compose** and follows a modern, dark-themed desig
 
 | Search | Watchlist |
 |------|----------|
-| ![](screenshots/search.jpg) | ![](screenshots/watchlist.jpg) |
+| ![](screenshots/search.jpeg) | ![](screenshots/watchlist.jpeg) |
 
 | Profile | Theme Selector |
 |--------|----------------|
-| ![](screenshots/profile.jpg) | ![](screenshots/theme.jpg) |
+| ![](screenshots/profile.jpeg) | ![](screenshots/theme.jpeg) |
 
 > *(Add the screenshots inside a `/screenshots` folder and rename accordingly)*
 
