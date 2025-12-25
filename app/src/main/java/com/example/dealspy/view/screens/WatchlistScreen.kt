@@ -40,7 +40,7 @@ import com.example.dealspy.ui.state.UiStateHandler
 import com.example.dealspy.view.components.AppTopBar
 import com.example.dealspy.view.navigation.BottomNavBar
 import com.example.dealspy.view.navigation.BottomNavOptions
-import com.example.dealspy.view.utils.ShimmerDealCard
+import com.example.dealspy.view.utils.ShimmerWatchCard
 import com.example.dealspy.view.utils.WatchCard
 import com.example.dealspy.vm.WatchListViewModel
 
@@ -103,114 +103,146 @@ fun WatchlistScreen(
                 }
             }
         ) {
-            UiStateHandler(
-                state = watchListState,
-                modifier = Modifier.fillMaxSize(),
-                onRetry = { viewModel.getWatchlistProducts() },
-                onIdle = {
-                    if (isApiLoading) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Top,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            repeat(4) {
-                                ShimmerDealCard(
-                                    isLoading = true,
-                                    contentAfterLoading = {}
-                                )
-                            }
-                        }
-                    }
-                },
-                onSuccess = { products ->
-                    LaunchedEffect(Unit) {
-                        isPulling = false
-                    }
-
-                    if (products.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "No items in watchlist",
-                                style = MaterialTheme.typography.bodyMedium
+            when {
+                watchListState is UiState.Loading -> {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        contentPadding = PaddingValues(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        items(count = 6) {
+                            ShimmerWatchCard(
+                                isLoading = true,
+                                contentAfterLoading = {}
                             )
-                        }
-                    } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            contentPadding = PaddingValues(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp),
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(
-                                items = products,
-                                key = { it.name ?: "Null" }
-                            ) { product ->
-                                WatchCard(
-                                    context =context,
-                                    product = product,
-                                    onDelete = {
-                                        Log.d("WatchlistScreen", "✅ onDelete CLICKED for ${product.name}")
-                                        productToDelete = product
-                                        showDeleteDialog = true
-                                    }
-                                )
-                            }
                         }
                     }
                 }
-            )
-        }
-    }
 
+                else -> {
+                    UiStateHandler(
+                        state = watchListState,
+                        modifier = Modifier.fillMaxSize(),
+                        onRetry = { viewModel.getWatchlistProducts() },
+                        onIdle = {
+                            if (isApiLoading) {
+                                Column(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.Top,
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    repeat(4) {
+                                        ShimmerWatchCard(
+                                            isLoading = true,
+                                            contentAfterLoading = {},
+                                            modifier = Modifier
+                                                .padding(8.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        },
+                        onSuccess = { products ->
+                            LaunchedEffect(Unit) {
+                                isPulling = false
+                            }
 
-    if (showDeleteDialog && productToDelete != null) {
-        AlertDialog(
-            onDismissRequest = {
-                showDeleteDialog = false
-                productToDelete = null
-            },
-            title = {
-                Text("Remove from Watchlist")
-            },
-            text = {
-                Text(
-                    "Are you sure you want to remove '${productToDelete?.name}' from your watchlist?",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        Log.d("WatchlistScreen", "✅ REMOVE BUTTON CLICKED for ${productToDelete?.name}")
-                        productToDelete?.name?.let {
-                            Log.d("WatchlistScreen", "✅ CALLING ViewModel.removeFromWatchlist($it)")
-                            viewModel.removeFromWatchlist(it)
+                            if (products.isEmpty()) {
+                                Box(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No items in watchlist",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+                            } else {
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(2),
+                                    contentPadding = PaddingValues(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    items(
+                                        items = products,
+                                        key = { it.name ?: "Null" }
+                                    ) { product ->
+                                        WatchCard(
+                                            context = context,
+                                            product = product,
+                                            onDelete = {
+                                                Log.d(
+                                                    "WatchlistScreen",
+                                                    "✅ onDelete CLICKED for ${product.name}"
+                                                )
+                                                productToDelete = product
+                                                showDeleteDialog = true
+                                            }
+                                        )
+                                    }
+                                }
+                            }
                         }
+                    )
+                }
+            }
+
+
+            if (showDeleteDialog && productToDelete != null) {
+                AlertDialog(
+                    onDismissRequest = {
                         showDeleteDialog = false
                         productToDelete = null
                     },
-                    colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text("Remove")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = {
-                        showDeleteDialog = false
-                        productToDelete = null
+                    title = {
+                        Text("Remove from Watchlist")
+                    },
+                    text = {
+                        Text(
+                            "Are you sure you want to remove '${productToDelete?.name}' from your watchlist?",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                Log.d(
+                                    "WatchlistScreen",
+                                    "✅ REMOVE BUTTON CLICKED for ${productToDelete?.name}"
+                                )
+                                productToDelete?.name?.let {
+                                    Log.d(
+                                        "WatchlistScreen",
+                                        "✅ CALLING ViewModel.removeFromWatchlist($it)"
+                                    )
+                                    viewModel.removeFromWatchlist(it)
+                                }
+                                showDeleteDialog = false
+                                productToDelete = null
+                            },
+                            colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Remove")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                showDeleteDialog = false
+                                productToDelete = null
+                            }
+                        ) {
+                            Text("Cancel")
+                        }
                     }
-                ) {
-                    Text("Cancel")
-                }
+                )
             }
-        )
+        }
     }
 }

@@ -177,7 +177,6 @@ fun SearchScreen(
                 }
 
                 searchListState is UiState.Loading -> {
-
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
