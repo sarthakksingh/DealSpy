@@ -60,12 +60,10 @@ The UI is built with **Jetpack Compose** and follows a modern, dark-themed desig
 - **Navigation Compose**
 - **Retrofit**
 - **OkHttp**
-- **DataStore**
 
 ### Firebase
 - Firebase Authentication
-- Firebase Analytics
-- Firebase Cloud Messaging (planned)
+- Firebase Cloud Messaging
 
 ### Backend
 - **Spring Boot REST APIs**
